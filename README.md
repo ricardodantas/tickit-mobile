@@ -94,7 +94,7 @@ Works fully offline. Syncs when connected.
 
 ### Prerequisites
 
-- **Node.js 18+**
+- **Node.js 24+**
 - **npm** or **yarn**
 - **Expo Go** app on your phone (for development)
 - For native builds: Xcode (iOS) / Android Studio (Android)
