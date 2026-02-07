@@ -95,7 +95,7 @@ Works fully offline. Syncs when connected.
 ### Prerequisites
 
 - **Node.js 24+**
-- **npm** or **yarn**
+- **pnpm**
 - **Expo Go** app on your phone (for development)
 - For native builds: Xcode (iOS) / Android Studio (Android)
 
@@ -107,26 +107,26 @@ git clone https://github.com/ricardodantas/tickit-mobile
 cd tickit-mobile
 
 # Install dependencies
-npm install
+pnpm install
 
 # Start development server
-npm start
+pnpm start
 ```
 
 ### Running the App
 
 ```bash
 # Start Expo development server
-npm start
+pnpm start
 
 # Run on iOS simulator (macOS only)
-npm run ios
+pnpm ios
 
 # Run on Android emulator
-npm run android
+pnpm android
 
 # Run in web browser
-npm run web
+pnpm web
 ```
 
 Scan the QR code with Expo Go on your phone to run the app.
@@ -336,28 +336,28 @@ The mobile app uses the same schema as the desktop Tickit app:
 # Clone and install
 git clone https://github.com/ricardodantas/tickit-mobile
 cd tickit-mobile
-npm install
+pnpm install
 
 # Start dev server
-npm start
+pnpm start
 ```
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `npm start` | Start Expo development server |
-| `npm run ios` | Run on iOS simulator |
-| `npm run android` | Run on Android emulator |
-| `npm run web` | Run in web browser |
-| `npm run lint` | Run ESLint |
-| `npm run prebuild` | Generate native projects |
+| `pnpm start` | Start Expo development server |
+| `pnpm ios` | Run on iOS simulator |
+| `pnpm android` | Run on Android emulator |
+| `pnpm web` | Run in web browser |
+| `pnpm lint` | Run ESLint |
+| `pnpm prebuild` | Generate native projects |
 
 ### Building for Production
 
 ```bash
 # Install EAS CLI
-npm install -g eas-cli
+pnpm install -g eas-cli
 
 # Login to Expo
 eas login
@@ -388,7 +388,7 @@ Contributions are welcome!
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
-4. Run linter: `npm run lint`
+4. Run linter: `pnpm lint`
 5. Commit: `git commit -m "Add amazing feature"`
 6. Push: `git push origin feature/amazing-feature`
 7. Open a Pull Request
