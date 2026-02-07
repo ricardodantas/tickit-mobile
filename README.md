@@ -145,7 +145,8 @@ Scan the QR code with Expo Go on your phone to run the app.
 
 <p align="center">
   <img src="screenshots/04-settings.png" width="250" alt="Settings">
-  <img src="screenshots/05-new-task.png" width="250" alt="New Task">
+  <img src="screenshots/05-themes.png" width="250" alt="Themes">
+  <img src="screenshots/06-themes-nord.png" width="250" alt="Nord Theme">
 </p>
 
 ### Tasks
@@ -160,13 +161,13 @@ Browse and manage your lists with task counts, list selection for filtering, and
 
 Manage your color-coded tags for flexible task categorization.
 
-### Task Editor
-
-Create and edit tasks with title, description, priority levels (Low, Medium, High, Urgent), list assignment, and due date picker.
-
 ### Settings
 
-Configure sync with your self-hosted server: enable/disable sync, set server URL and API token, configure sync interval, and test sync manually.
+Configure sync with your self-hosted server, toggle notifications, and access theme picker.
+
+### Themes
+
+Choose from 15 beautiful themes: Dracula, Nord, Tokyo Night, Catppuccin (Mocha/Latte), Gruvbox (Dark/Light), One Dark, Solarized (Dark/Light), Rosé Pine (Main/Dawn), Everforest, Kanagawa, and Monokai.
 
 <br>
 
