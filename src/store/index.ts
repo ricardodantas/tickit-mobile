@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { Task, List, Tag, SyncConfig, SyncStatus } from '../types';
 import * as db from '../services/database';
 import * as syncService from '../services/sync';
+import * as notifications from '../services/notifications';
 
 interface AppState {
   // Data
@@ -20,6 +21,7 @@ interface AppState {
   // Sync
   syncConfig: SyncConfig;
   syncStatus: SyncStatus;
+  notificationsEnabled: boolean;
   
   // Actions
   initialize: () => Promise<void>;
@@ -50,6 +52,10 @@ interface AppState {
   loadSyncConfig: () => Promise<void>;
   saveSyncConfig: (config: SyncConfig) => Promise<void>;
   sync: () => Promise<void>;
+  
+  // Notification actions
+  enableNotifications: () => Promise<boolean>;
+  syncNotifications: () => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -73,6 +79,7 @@ export const useStore = create<AppState>((set, get) => ({
     last_error: null,
     pending_changes: 0,
   },
+  notificationsEnabled: false,
   
   // Initialize app
   initialize: async () => {
@@ -97,6 +104,15 @@ export const useStore = create<AppState>((set, get) => ({
       
       set({ isLoading: false });
       
+      // Request notification permissions
+      const notificationsEnabled = await notifications.requestPermissions();
+      set({ notificationsEnabled });
+      
+      // Sync notifications for all tasks with due dates
+      if (notificationsEnabled) {
+        await notifications.syncAllReminders(get().tasks);
+      }
+      
       // Auto-sync if enabled
       if (syncService.isSyncEnabled(syncConfig)) {
         get().sync().catch(console.error);
@@ -118,16 +134,37 @@ export const useStore = create<AppState>((set, get) => ({
   
   // Task actions
   addTask: async (task) => {
-    await db.createTask(task);
+    const newTask = await db.createTask(task);
     await get().refreshData();
+    
+    // Schedule notification if task has due date
+    if (newTask.due_date && get().notificationsEnabled) {
+      await notifications.scheduleTaskReminder(newTask);
+      if (newTask.priority === 'high' || newTask.priority === 'urgent') {
+        await notifications.scheduleTaskReminderAdvance(newTask, 24);
+      }
+    }
   },
   
   updateTask: async (task) => {
     await db.updateTask(task);
     await get().refreshData();
+    
+    // Update notification
+    if (get().notificationsEnabled) {
+      if (task.due_date && !task.completed) {
+        await notifications.scheduleTaskReminder(task);
+        if (task.priority === 'high' || task.priority === 'urgent') {
+          await notifications.scheduleTaskReminderAdvance(task, 24);
+        }
+      } else {
+        await notifications.cancelTaskReminder(task.id);
+      }
+    }
   },
   
   deleteTask: async (id) => {
+    await notifications.cancelTaskReminder(id);
     await db.deleteTask(id);
     await get().refreshData();
   },
@@ -135,6 +172,14 @@ export const useStore = create<AppState>((set, get) => ({
   toggleTask: async (id) => {
     await db.toggleTaskComplete(id);
     await get().refreshData();
+    
+    // Cancel notification if task completed
+    const task = get().tasks.find(t => t.id === id);
+    if (task?.completed) {
+      await notifications.cancelTaskReminder(id);
+    } else if (task?.due_date && get().notificationsEnabled) {
+      await notifications.scheduleTaskReminder(task);
+    }
   },
   
   // List actions
@@ -226,6 +271,24 @@ export const useStore = create<AppState>((set, get) => ({
           last_error: String(e),
         },
       }));
+    }
+  },
+  
+  // Notification actions
+  enableNotifications: async () => {
+    const enabled = await notifications.requestPermissions();
+    set({ notificationsEnabled: enabled });
+    
+    if (enabled) {
+      await notifications.syncAllReminders(get().tasks);
+    }
+    
+    return enabled;
+  },
+  
+  syncNotifications: async () => {
+    if (get().notificationsEnabled) {
+      await notifications.syncAllReminders(get().tasks);
     }
   },
 }));

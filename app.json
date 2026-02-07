@@ -32,7 +32,15 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#bd93f9",
+          "sounds": []
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

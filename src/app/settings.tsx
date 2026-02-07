@@ -1,7 +1,7 @@
 // Settings screen with sync configuration
 
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStore } from '../store';
 import { colors, spacing, borderRadius, fontSize } from '../theme';
@@ -13,6 +13,8 @@ export default function SettingsScreen() {
   const syncStatus = useStore(state => state.syncStatus);
   const saveSyncConfig = useStore(state => state.saveSyncConfig);
   const sync = useStore(state => state.sync);
+  const notificationsEnabled = useStore(state => state.notificationsEnabled);
+  const enableNotifications = useStore(state => state.enableNotifications);
 
   const [enabled, setEnabled] = useState(syncConfig.enabled);
   const [server, setServer] = useState(syncConfig.server || '');
@@ -151,6 +153,47 @@ export default function SettingsScreen() {
           {syncStatus.syncing ? 'Syncing...' : 'Test Sync Now'}
         </Text>
       </TouchableOpacity>
+
+      {/* Notifications */}
+      {Platform.OS !== 'web' && (
+        <>
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Notifications</Text>
+          
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowLabel}>Due Date Reminders</Text>
+                <Text style={styles.rowDescription}>
+                  {notificationsEnabled 
+                    ? 'Get notified when tasks are due' 
+                    : 'Enable to receive reminders'}
+                </Text>
+              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={async (value) => {
+                  if (value) {
+                    const granted = await enableNotifications();
+                    if (!granted) {
+                      Alert.alert(
+                        'Permission Required',
+                        'Please enable notifications in your device settings to receive due date reminders.'
+                      );
+                    }
+                  }
+                }}
+                trackColor={{ false: colors.backgroundTertiary, true: colors.purple }}
+                thumbColor={colors.foreground}
+              />
+            </View>
+            
+            <Text style={styles.notificationInfo}>
+              🔔 Tasks with due dates will notify at 9:00 AM{'\n'}
+              ⚡ High/Urgent tasks also notify 24 hours before
+            </Text>
+          </View>
+        </>
+      )}
 
       {/* About */}
       <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>About</Text>
@@ -292,5 +335,11 @@ const styles = StyleSheet.create({
   aboutValue: {
     fontSize: fontSize.md,
     color: colors.foreground,
+  },
+  notificationInfo: {
+    fontSize: fontSize.sm,
+    color: colors.comment,
+    lineHeight: 20,
+    marginTop: spacing.sm,
   },
 });

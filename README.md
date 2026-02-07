@@ -83,6 +83,7 @@ Works fully offline. Syncs when connected.
 |---------|-------------|
 | ⚡ **Priority Levels** | Low, Medium, High, Urgent |
 | 📅 **Due Dates** | Set deadlines with visual indicators |
+| 🔔 **Notifications** | Reminders for tasks due today |
 | 💾 **SQLite Storage** | Local database matching desktop schema |
 | 🔐 **Secure Storage** | API tokens stored securely |
 | 🔄 **Background Sync** | Auto-sync at configurable intervals |
