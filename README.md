@@ -83,9 +83,9 @@ Works fully offline. Syncs when connected.
 |---------|-------------|
 | ⚡ **Priority Levels** | Low, Medium, High, Urgent |
 | 📅 **Due Dates** | Set deadlines with visual indicators |
-| 🔔 **Notifications** | Reminders for tasks due today |
+| 🔔 **Notifications** | Reminders at 9AM on due date; 24h advance for high/urgent |
 | 💾 **SQLite Storage** | Local database matching desktop schema |
-| 🔐 **Secure Storage** | API tokens stored securely |
+| 🔐 **Secure Storage** | API tokens stored securely (Keychain/EncryptedPrefs) |
 | 🔄 **Background Sync** | Auto-sync at configurable intervals |
 | 📱 **Native Feel** | React Native with New Architecture |
 
@@ -219,6 +219,34 @@ docker exec tickit-sync tickit-sync token --name "mobile"
 
 <br>
 
+## 🔔 Notifications
+
+Tickit Mobile sends push notifications for task due dates — even when the app is closed.
+
+### How It Works
+
+- **Due today** → Notification at 9:00 AM on the due date
+- **Due tomorrow** → Advance warning for high/urgent priority tasks (24h before)
+- **On task change** → Notifications auto-scheduled when creating/editing tasks
+- **On completion** → Notification cancelled when task is marked complete
+
+### Platform Support
+
+| Platform | Technology | Security |
+|----------|------------|----------|
+| **iOS** | Apple Push Notification service (APNs) | Scheduled at OS level |
+| **Android** | AlarmManager/WorkManager | Scheduled at OS level |
+
+### Toggle Notifications
+
+1. Open Settings (⚙️)
+2. Scroll to "Notifications" section
+3. Toggle "Due Date Reminders"
+
+> **Note:** Some Android devices with aggressive battery optimization may require you to whitelist Tickit in battery settings.
+
+<br>
+
 ## 🏗️ Architecture
 
 ### Tech Stack
@@ -253,6 +281,7 @@ tickit-mobile/
 │   ├── hooks/               # Custom React hooks
 │   ├── services/
 │   │   ├── database.ts      # SQLite operations
+│   │   ├── notifications.ts # Push notifications
 │   │   └── sync.ts          # Sync client
 │   ├── store/
 │   │   └── index.ts         # Zustand store
