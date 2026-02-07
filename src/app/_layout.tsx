@@ -5,11 +5,12 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useStore } from '../store';
-import { colors } from '../theme';
+import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const initialize = useStore(state => state.initialize);
   const isLoading = useStore(state => state.isLoading);
+  const { colors, isDark } = useTheme();
 
   useEffect(() => {
     initialize();
@@ -17,7 +18,7 @@ export default function RootLayout() {
 
   if (isLoading) {
     return (
-      <View style={styles.loading}>
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.purple} />
       </View>
     );
@@ -25,7 +26,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerStyle: {
@@ -65,8 +66,23 @@ export default function RootLayout() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="themes"
+          options={{
+            title: 'Themes',
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
   );
 }
 
@@ -75,6 +91,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
   },
 });

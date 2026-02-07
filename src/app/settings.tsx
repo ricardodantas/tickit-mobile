@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStore } from '../store';
-import { colors, spacing, borderRadius, fontSize } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
+import { spacing, borderRadius, fontSize } from '../theme';
 import { SyncConfig } from '../types';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { theme, colors } = useTheme();
   const syncConfig = useStore(state => state.syncConfig);
   const syncStatus = useStore(state => state.syncStatus);
   const saveSyncConfig = useStore(state => state.saveSyncConfig);
@@ -56,15 +58,15 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>Sync Settings</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.sectionTitle, { color: colors.comment }]}>Sync Settings</Text>
       
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.backgroundSecondary }]}>
         {/* Enable Sync */}
-        <View style={styles.row}>
+        <View style={[styles.row, { borderBottomColor: colors.backgroundTertiary }]}>
           <View style={styles.rowContent}>
-            <Text style={styles.rowLabel}>Enable Sync</Text>
-            <Text style={styles.rowDescription}>Sync tasks across devices</Text>
+            <Text style={[styles.rowLabel, { color: colors.foreground }]}>Enable Sync</Text>
+            <Text style={[styles.rowDescription, { color: colors.comment }]}>Sync tasks across devices</Text>
           </View>
           <Switch
             value={enabled}
@@ -76,9 +78,9 @@ export default function SettingsScreen() {
 
         {/* Server URL */}
         <View style={styles.field}>
-          <Text style={styles.label}>Server URL</Text>
+          <Text style={[styles.label, { color: colors.comment }]}>Server URL</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.backgroundTertiary }]}
             value={server}
             onChangeText={setServer}
             placeholder="https://sync.example.com"
@@ -91,9 +93,9 @@ export default function SettingsScreen() {
 
         {/* Token */}
         <View style={styles.field}>
-          <Text style={styles.label}>API Token</Text>
+          <Text style={[styles.label, { color: colors.comment }]}>API Token</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.backgroundTertiary }]}
             value={token}
             onChangeText={setToken}
             placeholder="tks_your_token_here"
@@ -107,9 +109,9 @@ export default function SettingsScreen() {
 
         {/* Interval */}
         <View style={styles.field}>
-          <Text style={styles.label}>Sync Interval (seconds)</Text>
+          <Text style={[styles.label, { color: colors.comment }]}>Sync Interval (seconds)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.backgroundTertiary }]}
             value={interval}
             onChangeText={setInterval}
             placeholder="300"
@@ -121,9 +123,9 @@ export default function SettingsScreen() {
 
         {/* Sync Status */}
         {syncStatus.last_sync && (
-          <View style={styles.status}>
-            <Text style={styles.statusLabel}>Last Sync:</Text>
-            <Text style={styles.statusValue}>
+          <View style={[styles.status, { borderTopColor: colors.backgroundTertiary }]}>
+            <Text style={[styles.statusLabel, { color: colors.comment }]}>Last Sync:</Text>
+            <Text style={[styles.statusValue, { color: colors.foreground }]}>
               {new Date(syncStatus.last_sync).toLocaleString()}
             </Text>
           </View>
@@ -131,7 +133,7 @@ export default function SettingsScreen() {
 
         {syncStatus.last_error && (
           <View style={[styles.status, styles.statusError]}>
-            <Text style={styles.statusLabel}>Error:</Text>
+            <Text style={[styles.statusLabel, { color: colors.comment }]}>Error:</Text>
             <Text style={[styles.statusValue, { color: colors.red }]}>
               {syncStatus.last_error}
             </Text>
@@ -140,16 +142,16 @@ export default function SettingsScreen() {
       </View>
 
       {/* Actions */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Save Settings</Text>
+      <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.purple }]} onPress={handleSave}>
+        <Text style={[styles.saveButtonText, { color: colors.foreground }]}>Save Settings</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={[styles.syncButton, (!enabled || !server || !token) && styles.buttonDisabled]} 
+        style={[styles.syncButton, { backgroundColor: colors.backgroundTertiary }, (!enabled || !server || !token) && styles.buttonDisabled]} 
         onPress={handleTestSync}
         disabled={!enabled || !server || !token || syncStatus.syncing}
       >
-        <Text style={styles.syncButtonText}>
+        <Text style={[styles.syncButtonText, { color: colors.foreground }]}>
           {syncStatus.syncing ? 'Syncing...' : 'Test Sync Now'}
         </Text>
       </TouchableOpacity>
@@ -157,13 +159,13 @@ export default function SettingsScreen() {
       {/* Notifications */}
       {Platform.OS !== 'web' && (
         <>
-          <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Notifications</Text>
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xl, color: colors.comment }]}>Notifications</Text>
           
-          <View style={styles.card}>
-            <View style={styles.row}>
+          <View style={[styles.card, { backgroundColor: colors.backgroundSecondary }]}>
+            <View style={[styles.row, { borderBottomColor: colors.backgroundTertiary }]}>
               <View style={styles.rowContent}>
-                <Text style={styles.rowLabel}>Due Date Reminders</Text>
-                <Text style={styles.rowDescription}>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>Due Date Reminders</Text>
+                <Text style={[styles.rowDescription, { color: colors.comment }]}>
                   {notificationsEnabled 
                     ? 'Get notified when tasks are due' 
                     : 'Enable to receive reminders'}
@@ -187,7 +189,7 @@ export default function SettingsScreen() {
               />
             </View>
             
-            <Text style={styles.notificationInfo}>
+            <Text style={[styles.notificationInfo, { color: colors.comment }]}>
               🔔 Tasks with due dates will notify at 9:00 AM{'\n'}
               ⚡ High/Urgent tasks also notify 24 hours before
             </Text>
@@ -195,17 +197,41 @@ export default function SettingsScreen() {
         </>
       )}
 
-      {/* About */}
-      <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>About</Text>
+      {/* Appearance */}
+      <Text style={[styles.sectionTitle, { marginTop: spacing.xl, color: colors.comment }]}>Appearance</Text>
       
-      <View style={styles.card}>
-        <View style={styles.aboutRow}>
-          <Text style={styles.aboutLabel}>Version</Text>
-          <Text style={styles.aboutValue}>1.0.0</Text>
+      <TouchableOpacity 
+        style={[styles.card, { backgroundColor: colors.backgroundSecondary }]}
+        onPress={() => router.push('/themes' as any)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.themeRow}>
+          <View>
+            <Text style={[styles.rowLabel, { color: colors.foreground }]}>Theme</Text>
+            <Text style={[styles.rowDescription, { color: colors.comment }]}>{theme.displayName}</Text>
+          </View>
+          <View style={styles.themePreview}>
+            <View style={[styles.previewDot, { backgroundColor: colors.red }]} />
+            <View style={[styles.previewDot, { backgroundColor: colors.orange }]} />
+            <View style={[styles.previewDot, { backgroundColor: colors.yellow }]} />
+            <View style={[styles.previewDot, { backgroundColor: colors.green }]} />
+            <View style={[styles.previewDot, { backgroundColor: colors.purple }]} />
+            <Text style={[styles.chevron, { color: colors.comment }]}>›</Text>
+          </View>
         </View>
-        <View style={styles.aboutRow}>
-          <Text style={styles.aboutLabel}>Sync Server</Text>
-          <Text style={styles.aboutValue}>tickit-sync</Text>
+      </TouchableOpacity>
+
+      {/* About */}
+      <Text style={[styles.sectionTitle, { marginTop: spacing.xl, color: colors.comment }]}>About</Text>
+      
+      <View style={[styles.card, { backgroundColor: colors.backgroundSecondary }]}>
+        <View style={[styles.aboutRow, { borderBottomColor: colors.backgroundTertiary }]}>
+          <Text style={[styles.aboutLabel, { color: colors.comment }]}>Version</Text>
+          <Text style={[styles.aboutValue, { color: colors.foreground }]}>1.0.0</Text>
+        </View>
+        <View style={[styles.aboutRow, { borderBottomColor: colors.backgroundTertiary }]}>
+          <Text style={[styles.aboutLabel, { color: colors.comment }]}>Sync Server</Text>
+          <Text style={[styles.aboutValue, { color: colors.foreground }]}>tickit-sync</Text>
         </View>
       </View>
     </ScrollView>
@@ -215,20 +241,17 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
     padding: spacing.md,
   },
   sectionTitle: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: colors.comment,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: spacing.sm,
     marginTop: spacing.md,
   },
   card: {
-    backgroundColor: colors.backgroundSecondary,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
   },
@@ -237,7 +260,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.backgroundTertiary,
     marginBottom: spacing.md,
   },
   rowContent: {
@@ -245,12 +267,10 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     fontSize: fontSize.md,
-    color: colors.foreground,
     fontWeight: '500',
   },
   rowDescription: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     marginTop: 2,
   },
   field: {
@@ -259,17 +279,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.sm,
     fontWeight: '500',
-    color: colors.comment,
     marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: colors.background,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     fontSize: fontSize.md,
-    color: colors.foreground,
     borderWidth: 1,
-    borderColor: colors.backgroundTertiary,
   },
   status: {
     flexDirection: 'row',
@@ -278,7 +294,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.backgroundTertiary,
   },
   statusError: {
     marginTop: spacing.xs,
@@ -287,15 +302,12 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: fontSize.sm,
-    color: colors.comment,
   },
   statusValue: {
     fontSize: fontSize.sm,
-    color: colors.foreground,
     flex: 1,
   },
   saveButton: {
-    backgroundColor: colors.purple,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
@@ -304,10 +316,8 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.foreground,
   },
   syncButton: {
-    backgroundColor: colors.backgroundTertiary,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
@@ -319,27 +329,42 @@ const styles = StyleSheet.create({
   syncButtonText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.foreground,
   },
   aboutRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.backgroundTertiary,
   },
   aboutLabel: {
     fontSize: fontSize.md,
-    color: colors.comment,
   },
   aboutValue: {
     fontSize: fontSize.md,
-    color: colors.foreground,
   },
   notificationInfo: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     lineHeight: 20,
     marginTop: spacing.sm,
+  },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  themePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  previewDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  chevron: {
+    fontSize: fontSize.xl,
+    marginLeft: spacing.sm,
   },
 });

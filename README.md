@@ -65,8 +65,8 @@ Color-coded tags for flexible categorization.
 ### 🔄 Sync
 Sync with your self-hosted [tickit-sync](https://github.com/ricardodantas/tickit-sync) server.
 
-### 🎨 Dracula Theme
-Beautiful dark theme matching the desktop app.
+### 🎨 15 Themes
+Same beautiful themes as desktop: Dracula, Nord, Tokyo Night, and more.
 
 ### 📴 Offline-First
 Works fully offline. Syncs when connected.
@@ -84,6 +84,7 @@ Works fully offline. Syncs when connected.
 | ⚡ **Priority Levels** | Low, Medium, High, Urgent |
 | 📅 **Due Dates** | Set deadlines with visual indicators |
 | 🔔 **Notifications** | Reminders at 9AM on due date; 24h advance for high/urgent |
+| 🎨 **15 Themes** | Dracula, Nord, Tokyo Night, Catppuccin, and more |
 | 💾 **SQLite Storage** | Local database matching desktop schema |
 | 🔐 **Secure Storage** | API tokens stored securely (Keychain/EncryptedPrefs) |
 | 🔄 **Background Sync** | Auto-sync at configurable intervals |
