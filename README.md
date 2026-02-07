@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="Tickit Mobile" width="120">
+  <img src="screenshots/01-tasks.png" alt="Tickit Mobile" width="300">
 </p>
 
 <h1 align="center">
@@ -135,45 +135,36 @@ Scan the QR code with Expo Go on your phone to run the app.
 
 ## 📱 Screens
 
+<p align="center">
+  <img src="screenshots/01-tasks.png" width="250" alt="Tasks">
+  <img src="screenshots/02-lists.png" width="250" alt="Lists">
+  <img src="screenshots/03-tags.png" width="250" alt="Tags">
+</p>
+
+<p align="center">
+  <img src="screenshots/04-settings.png" width="250" alt="Settings">
+  <img src="screenshots/05-new-task.png" width="250" alt="New Task">
+</p>
+
 ### Tasks
 
-The main screen showing your task list with:
-- Completion toggle
-- Priority indicators
-- Due date badges
-- Quick access to settings
+The main screen showing your task list with completion toggle, priority indicators, due date badges, and quick access to settings.
 
 ### Lists
 
-Browse and manage your lists:
-- See task counts
-- Select list to filter tasks
-- Create new lists
-- Delete lists (tasks move to Inbox)
+Browse and manage your lists with task counts, list selection for filtering, and quick list creation.
 
 ### Tags
 
-Manage your color-coded tags:
-- View all tags
-- Create new tags
-- Delete tags
+Manage your color-coded tags for flexible task categorization.
 
 ### Task Editor
 
-Full task editing with:
-- Title and description
-- Priority selection
-- List assignment
-- Due date picker
+Create and edit tasks with title, description, priority levels (Low, Medium, High, Urgent), list assignment, and due date picker.
 
 ### Settings
 
-Configure sync and view app info:
-- Enable/disable sync
-- Server URL
-- API token
-- Sync interval
-- Manual sync button
+Configure sync with your self-hosted server: enable/disable sync, set server URL and API token, configure sync interval, and test sync manually.
 
 <br>
 

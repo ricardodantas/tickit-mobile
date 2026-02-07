@@ -11,6 +11,7 @@
     "prebuild": "expo prebuild"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
     "@react-navigation/native": "^7.1.28",
     "expo": "~54.0.33",
     "expo-router": "^6.0.23",
@@ -18,15 +19,18 @@
     "expo-sqlite": "^16.0.10",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "^4.23.0",
+    "react-native-web": "^0.21.0",
     "uuid": "^13.0.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
     "@types/uuid": "^10.0.0",
+    "playwright": "^1.58.2",
     "typescript": "~5.9.2"
   },
   "private": true
