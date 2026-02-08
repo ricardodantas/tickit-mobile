@@ -1,7 +1,7 @@
 // Tasks screen - main task list
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore, useFilteredTasks, useSelectedList } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
@@ -101,11 +101,9 @@ export default function TasksScreen() {
               <Feather name="alert-circle" size={20} color={colors.red} />
             </TouchableOpacity>
           )}
-          <Link href="/settings" asChild>
-            <TouchableOpacity style={styles.headerButton}>
-              <Feather name="settings" size={20} color={colors.comment} />
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/settings')}>
+            <Feather name="settings" size={20} color={colors.comment} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -127,11 +125,12 @@ export default function TasksScreen() {
       />
 
       {/* FAB */}
-      <Link href="/task/new" asChild>
-        <TouchableOpacity style={[styles.fab, { backgroundColor: colors.purple }]}>
-          <Feather name="plus" size={28} color="#fff" />
-        </TouchableOpacity>
-      </Link>
+      <TouchableOpacity 
+        style={StyleSheet.flatten([styles.fab, { backgroundColor: colors.purple }])}
+        onPress={() => router.push('/task/new')}
+      >
+        <Feather name="plus" size={28} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
