@@ -1,14 +1,11 @@
 // Lists screen
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
-import { useTheme } from '../../theme/ThemeContext';
-import { spacing, borderRadius, fontSize } from '../../theme';
+import { colors, spacing, borderRadius, fontSize } from '../../theme';
 import { List } from '../../types';
 
 export default function ListsScreen() {
-  const { colors } = useTheme();
   const lists = useStore(state => state.lists);
   const selectedListId = useStore(state => state.selectedListId);
   const selectList = useStore(state => state.selectList);
@@ -37,15 +34,7 @@ export default function ListsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Lists</Text>
-        <Text style={[styles.subtitle, { color: colors.comment }]}>
-          {lists.length} {lists.length === 1 ? 'list' : 'lists'}
-        </Text>
-      </View>
-
+    <View style={styles.container}>
       <FlatList
         data={lists}
         keyExtractor={(item) => item.id}
@@ -53,39 +42,30 @@ export default function ListsScreen() {
           <Pressable 
             style={({ pressed }) => [
               styles.listItem,
-              { backgroundColor: colors.backgroundSecondary },
-              item.id === selectedListId && { borderColor: colors.purple, borderWidth: 2 },
+              item.id === selectedListId && styles.listItemSelected,
               pressed && styles.listItemPressed,
             ]}
             onPress={() => selectList(item.id)}
             onLongPress={() => handleDelete(item)}
           >
-            <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
-              <Feather 
-                name={item.is_inbox ? 'inbox' : 'folder'} 
-                size={20} 
-                color={colors.purple} 
-              />
-            </View>
+            <Text style={styles.listIcon}>{item.icon}</Text>
             <View style={styles.listContent}>
-              <Text style={[styles.listName, { color: colors.foreground }]}>{item.name}</Text>
+              <Text style={styles.listName}>{item.name}</Text>
               {item.description && (
-                <Text style={[styles.listDescription, { color: colors.comment }]}>{item.description}</Text>
+                <Text style={styles.listDescription}>{item.description}</Text>
               )}
             </View>
-            <View style={[styles.taskCount, { backgroundColor: colors.backgroundTertiary }]}>
-              <Text style={[styles.taskCountText, { color: colors.comment }]}>{getTaskCount(item.id)}</Text>
+            <View style={styles.taskCount}>
+              <Text style={styles.taskCountText}>{getTaskCount(item.id)}</Text>
             </View>
-            <Feather name="chevron-right" size={16} color={colors.comment} />
           </Pressable>
         )}
         contentContainerStyle={styles.list}
       />
 
       {/* Add list button */}
-      <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.backgroundSecondary }]}>
-        <Feather name="plus" size={20} color={colors.purple} />
-        <Text style={[styles.addButtonText, { color: colors.purple }]}>New List</Text>
+      <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.addButtonText}>+ New List</Text>
       </TouchableOpacity>
     </View>
   );
@@ -94,20 +74,7 @@ export default function ListsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: 60,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
+    backgroundColor: colors.background,
   },
   list: {
     padding: spacing.md,
@@ -115,20 +82,21 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
+    gap: spacing.md,
+  },
+  listItemSelected: {
+    borderColor: colors.purple,
+    borderWidth: 2,
   },
   listItemPressed: {
     opacity: 0.7,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
+  listIcon: {
+    fontSize: 24,
   },
   listContent: {
     flex: 1,
@@ -136,32 +104,34 @@ const styles = StyleSheet.create({
   listName: {
     fontSize: fontSize.md,
     fontWeight: '600',
+    color: colors.foreground,
   },
   listDescription: {
     fontSize: fontSize.sm,
+    color: colors.comment,
     marginTop: 2,
   },
   taskCount: {
+    backgroundColor: colors.backgroundTertiary,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
-    marginRight: spacing.sm,
   },
   taskCountText: {
     fontSize: fontSize.sm,
+    color: colors.comment,
     fontWeight: '600',
   },
   addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     margin: spacing.md,
     padding: spacing.md,
+    backgroundColor: colors.backgroundTertiary,
     borderRadius: borderRadius.lg,
+    alignItems: 'center',
   },
   addButtonText: {
     fontSize: fontSize.md,
+    color: colors.purple,
     fontWeight: '600',
-    marginLeft: spacing.sm,
   },
 });

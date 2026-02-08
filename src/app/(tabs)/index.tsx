@@ -2,52 +2,39 @@
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import { useStore, useFilteredTasks, useSelectedList } from '../../store';
-import { useTheme } from '../../theme/ThemeContext';
-import { spacing, borderRadius, fontSize } from '../../theme';
+import { colors, spacing, borderRadius, fontSize } from '../../theme';
 import { Task, Priority } from '../../types';
 
 export default function TasksScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
   const tasks = useFilteredTasks();
   const selectedList = useSelectedList();
+  const lists = useStore(state => state.lists);
   const toggleTask = useStore(state => state.toggleTask);
   const syncStatus = useStore(state => state.syncStatus);
   const sync = useStore(state => state.sync);
-
-  const incompleteTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
 
   const handleToggle = async (id: string) => {
     await toggleTask(id);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.backgroundTertiary }]}>
-        <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            {selectedList?.name ?? 'All Tasks'}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.comment }]}>
-            {incompleteTasks.length} {incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining
-          </Text>
-        </View>
-        <View style={styles.headerActions}>
-          {syncStatus.syncing && (
-            <Feather name="refresh-cw" size={18} color={colors.comment} style={styles.syncIcon} />
-          )}
-          {syncStatus.last_error && !syncStatus.syncing && (
-            <TouchableOpacity onPress={sync} style={styles.headerButton}>
-              <Feather name="alert-circle" size={20} color={colors.red} />
+    <View style={styles.container}>
+      {/* Header with list selector */}
+      <View style={styles.header}>
+        <Text style={styles.title}>{selectedList?.icon} {selectedList?.name ?? 'All Tasks'}</Text>
+        <View style={styles.headerRight}>
+          {syncStatus.syncing ? (
+            <Text style={styles.syncText}>Syncing...</Text>
+          ) : syncStatus.last_error ? (
+            <TouchableOpacity onPress={sync}>
+              <Text style={styles.syncError}>⚠️ Tap to retry</Text>
             </TouchableOpacity>
-          )}
+          ) : null}
           <Link href="/settings" asChild>
-            <TouchableOpacity style={styles.headerButton}>
-              <Feather name="settings" size={20} color={colors.comment} />
+            <TouchableOpacity>
+              <Text style={styles.settingsIcon}>⚙️</Text>
             </TouchableOpacity>
           </Link>
         </View>
@@ -55,44 +42,29 @@ export default function TasksScreen() {
 
       {/* Task list */}
       <FlatList
-        data={[...incompleteTasks, ...(completedTasks.length > 0 ? [{ id: '__separator__', isSeparator: true } as any, ...completedTasks] : [])]}
+        data={tasks}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          if (item.isSeparator) {
-            return (
-              <View style={styles.separator}>
-                <View style={[styles.separatorLine, { backgroundColor: colors.backgroundTertiary }]} />
-                <Text style={[styles.separatorText, { color: colors.comment }]}>
-                  Completed ({completedTasks.length})
-                </Text>
-                <View style={[styles.separatorLine, { backgroundColor: colors.backgroundTertiary }]} />
-              </View>
-            );
-          }
-          return (
-            <TaskItem 
-              task={item} 
-              onToggle={() => handleToggle(item.id)}
-              onPress={() => router.push(`/task/${item.id}`)}
-            />
-          );
-        }}
+        renderItem={({ item }) => (
+          <TaskItem 
+            task={item} 
+            onToggle={() => handleToggle(item.id)}
+            onPress={() => router.push(`/task/${item.id}`)}
+          />
+        )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <View style={[styles.emptyIconContainer, { backgroundColor: colors.backgroundSecondary }]}>
-              <Feather name="check-circle" size={32} color={colors.green} />
-            </View>
-            <Text style={[styles.emptyText, { color: colors.foreground }]}>No tasks yet</Text>
-            <Text style={[styles.emptySubtext, { color: colors.comment }]}>Tap + to add your first task</Text>
+            <Text style={styles.emptyIcon}>✅</Text>
+            <Text style={styles.emptyText}>No tasks yet</Text>
+            <Text style={styles.emptySubtext}>Tap + to add your first task</Text>
           </View>
         }
       />
 
       {/* FAB */}
       <Link href="/task/new" asChild>
-        <TouchableOpacity style={[styles.fab, { backgroundColor: colors.purple }]}>
-          <Feather name="plus" size={28} color="#fff" />
+        <TouchableOpacity style={styles.fab}>
+          <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       </Link>
     </View>
@@ -100,66 +72,37 @@ export default function TasksScreen() {
 }
 
 function TaskItem({ task, onToggle, onPress }: { task: Task; onToggle: () => void; onPress: () => void }) {
-  const { colors } = useTheme();
-  const priorityColor = getPriorityColor(task.priority, colors);
+  const priorityColor = getPriorityColor(task.priority);
   
   return (
     <Pressable 
-      style={({ pressed }) => [
-        styles.taskItem, 
-        { backgroundColor: colors.backgroundSecondary },
-        pressed && styles.taskItemPressed
-      ]}
+      style={({ pressed }) => [styles.taskItem, pressed && styles.taskItemPressed]}
       onPress={onPress}
     >
       <TouchableOpacity 
-        style={[
-          styles.checkbox, 
-          { borderColor: task.completed ? colors.green : colors.comment },
-          task.completed && { backgroundColor: colors.green }
-        ]}
+        style={[styles.checkbox, task.completed && styles.checkboxChecked]}
         onPress={onToggle}
       >
-        {task.completed && <Feather name="check" size={14} color={colors.background} />}
+        {task.completed && <Text style={styles.checkmark}>✓</Text>}
       </TouchableOpacity>
       
       <View style={styles.taskContent}>
-        <Text 
-          style={[
-            styles.taskTitle, 
-            { color: task.completed ? colors.comment : colors.foreground },
-            task.completed && styles.taskTitleCompleted
-          ]}
-          numberOfLines={2}
-        >
+        <Text style={[styles.taskTitle, task.completed && styles.taskTitleCompleted]}>
           {task.title}
         </Text>
         {task.due_date && (
-          <View style={styles.taskMeta}>
-            <Feather 
-              name="calendar" 
-              size={12} 
-              color={isDueOverdue(task.due_date) && !task.completed ? colors.red : colors.comment} 
-            />
-            <Text 
-              style={[
-                styles.taskDue, 
-                { color: isDueOverdue(task.due_date) && !task.completed ? colors.red : colors.comment }
-              ]}
-            >
-              {formatDate(task.due_date)}
-            </Text>
-          </View>
+          <Text style={[styles.taskDue, isDueOverdue(task.due_date) && styles.taskDueOverdue]}>
+            📅 {formatDate(task.due_date)}
+          </Text>
         )}
       </View>
       
       <View style={[styles.priorityDot, { backgroundColor: priorityColor }]} />
-      <Feather name="chevron-right" size={16} color={colors.comment} />
     </Pressable>
   );
 }
 
-function getPriorityColor(priority: Priority, colors: any): string {
+function getPriorityColor(priority: Priority): string {
   switch (priority) {
     case 'urgent': return colors.red;
     case 'high': return colors.orange;
@@ -169,16 +112,12 @@ function getPriorityColor(priority: Priority, colors: any): string {
 }
 
 function isDueOverdue(dueDate: string): boolean {
-  const due = new Date(dueDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return due < today;
+  return new Date(dueDate) < new Date();
 }
 
 function formatDate(date: string): string {
   const d = new Date(date);
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
@@ -191,101 +130,93 @@ function formatDate(date: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 60,
-    paddingBottom: spacing.md,
+    padding: spacing.md,
     borderBottomWidth: 1,
+    borderBottomColor: colors.backgroundTertiary,
   },
-  headerContent: {
-    flex: 1,
-  },
-  headerActions: {
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  headerButton: {
-    padding: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  syncIcon: {
-    marginRight: spacing.sm,
+    gap: spacing.md,
   },
   title: {
-    fontSize: 28,
+    fontSize: fontSize.xl,
     fontWeight: '700',
+    color: colors.foreground,
   },
-  subtitle: {
+  settingsIcon: {
+    fontSize: 24,
+  },
+  syncText: {
     fontSize: fontSize.sm,
-    marginTop: 2,
+    color: colors.comment,
+  },
+  syncError: {
+    fontSize: fontSize.sm,
+    color: colors.red,
   },
   list: {
     padding: spacing.md,
     paddingBottom: 100,
   },
-  separator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-    paddingHorizontal: spacing.sm,
-  },
-  separatorLine: {
-    flex: 1,
-    height: 1,
-  },
-  separatorText: {
-    fontSize: fontSize.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginHorizontal: spacing.md,
-  },
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
+    gap: spacing.md,
   },
   taskItemPressed: {
     opacity: 0.7,
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+    width: 24,
+    height: 24,
+    borderRadius: borderRadius.sm,
     borderWidth: 2,
+    borderColor: colors.comment,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: spacing.md,
+  },
+  checkboxChecked: {
+    backgroundColor: colors.green,
+    borderColor: colors.green,
+  },
+  checkmark: {
+    color: colors.background,
+    fontWeight: '700',
   },
   taskContent: {
     flex: 1,
   },
   taskTitle: {
     fontSize: fontSize.md,
-    fontWeight: '500',
+    color: colors.foreground,
   },
   taskTitleCompleted: {
     textDecorationLine: 'line-through',
-  },
-  taskMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
+    color: colors.comment,
   },
   taskDue: {
-    fontSize: fontSize.xs,
-    marginLeft: 4,
+    fontSize: fontSize.sm,
+    color: colors.comment,
+    marginTop: 4,
+  },
+  taskDueOverdue: {
+    color: colors.red,
   },
   priorityDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: spacing.sm,
   },
   empty: {
     flex: 1,
@@ -293,20 +224,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 100,
   },
-  emptyIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: fontSize.lg,
+    color: colors.foreground,
     fontWeight: '600',
   },
   emptySubtext: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.md,
+    color: colors.comment,
     marginTop: spacing.xs,
   },
   fab: {
@@ -316,6 +245,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
+    backgroundColor: colors.purple,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
@@ -323,5 +253,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+  },
+  fabText: {
+    fontSize: 28,
+    color: colors.foreground,
+    fontWeight: '300',
   },
 });
