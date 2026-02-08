@@ -44,9 +44,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tasks',
+          title: 'Inbox',
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon name={focused ? 'check-circle' : 'circle'} color={color} />
+            <TabIcon name={focused ? 'check-circle' : 'inbox'} color={color} />
           ),
         }}
       />
