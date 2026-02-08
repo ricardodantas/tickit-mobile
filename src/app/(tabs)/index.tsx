@@ -90,6 +90,17 @@ export default function TasksScreen() {
 
   const headerRight = (
     <>
+      {/* Show/hide completed toggle */}
+      <TouchableOpacity 
+        style={styles.headerButton} 
+        onPress={() => setShowCompleted(!showCompleted)}
+      >
+        <Feather 
+          name={showCompleted ? 'eye' : 'eye-off'} 
+          size={20} 
+          color={showCompleted ? colors.purple : colors.comment} 
+        />
+      </TouchableOpacity>
       {syncStatus.syncing && (
         <Feather name="refresh-cw" size={18} color={colors.comment} style={styles.syncIcon} />
       )}
@@ -108,32 +119,10 @@ export default function TasksScreen() {
     <ScreenWrapper
       header={{
         title: selectedList?.name ?? 'All Tasks',
-        subtitle: `${incompleteTasks.length} ${incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining`,
+        subtitle: `${incompleteTasks.length} remaining${completedTasks.length > 0 ? ` · ${completedTasks.length} done` : ''}`,
         rightContent: headerRight,
       }}
     >
-      {/* Show completed toggle */}
-      {completedTasks.length > 0 && (
-        <TouchableOpacity 
-          style={[styles.toggleBar, { backgroundColor: colors.backgroundSecondary }]}
-          onPress={() => setShowCompleted(!showCompleted)}
-        >
-          <Feather 
-            name={showCompleted ? 'eye' : 'eye-off'} 
-            size={16} 
-            color={colors.comment} 
-          />
-          <Text style={[styles.toggleText, { color: colors.comment }]}>
-            {showCompleted ? 'Showing' : 'Hiding'} {completedTasks.length} completed
-          </Text>
-          <Feather 
-            name={showCompleted ? 'chevron-up' : 'chevron-down'} 
-            size={16} 
-            color={colors.comment} 
-          />
-        </TouchableOpacity>
-      )}
-
       {/* Task list */}
       <FlatList
         data={displayedTasks}
@@ -189,19 +178,6 @@ const styles = StyleSheet.create({
   },
   syncIcon: {
     marginRight: spacing.sm,
-  },
-  toggleBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: spacing.md,
-    marginTop: spacing.sm,
-    padding: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  toggleText: {
-    fontSize: fontSize.sm,
-    marginHorizontal: spacing.sm,
   },
   list: {
     padding: spacing.md,
