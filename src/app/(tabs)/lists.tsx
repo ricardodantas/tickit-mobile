@@ -15,20 +15,47 @@ export default function ListsScreen() {
   const { colors } = useTheme();
   const lists = useStore(state => state.lists);
   const addList = useStore(state => state.addList);
+  const updateList = useStore(state => state.updateList);
   const deleteList = useStore(state => state.deleteList);
   const tasks = useStore(state => state.tasks);
 
   const [showModal, setShowModal] = useState(false);
-  const [newListName, setNewListName] = useState('');
-  const [newListDescription, setNewListDescription] = useState('');
+  const [editingList, setEditingList] = useState<List | null>(null);
+  const [listName, setListName] = useState('');
+  const [listDescription, setListDescription] = useState('');
 
   const getTaskCount = (listId: string) => {
     return tasks.filter(t => t.list_id === listId && !t.completed).length;
   };
 
   const handleSelectList = (listId: string) => {
-    // Navigate to the list detail screen
     router.push(`/list/${listId}`);
+  };
+
+  const openCreateModal = () => {
+    setEditingList(null);
+    setListName('');
+    setListDescription('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (list: List) => {
+    if (list.is_inbox) {
+      // Can't edit inbox, just open it
+      handleSelectList(list.id);
+      return;
+    }
+    setEditingList(list);
+    setListName(list.name);
+    setListDescription(list.description || '');
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingList(null);
+    setListName('');
+    setListDescription('');
   };
 
   const handleDelete = (list: List) => {
@@ -42,60 +69,82 @@ export default function ListsScreen() {
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: () => deleteList(list.id),
+          onPress: () => {
+            deleteList(list.id);
+            closeModal();
+          },
         },
       ]
     );
   };
 
-  const handleCreateList = async () => {
-    if (!newListName.trim()) return;
+  const handleSave = async () => {
+    if (!listName.trim()) return;
     
-    await addList({
-      name: newListName.trim(),
-      description: newListDescription.trim() || null,
-      icon: '📁',
-      color: null,
-      sort_order: lists.length,
-    });
+    if (editingList) {
+      await updateList({
+        ...editingList,
+        name: listName.trim(),
+        description: listDescription.trim() || null,
+      });
+    } else {
+      await addList({
+        name: listName.trim(),
+        description: listDescription.trim() || null,
+        icon: '📁',
+        color: null,
+        sort_order: lists.length,
+      });
+    }
     
-    setNewListName('');
-    setNewListDescription('');
-    setShowModal(false);
+    closeModal();
   };
 
   const renderListItem = ({ item }: { item: List }) => {
     const taskCount = getTaskCount(item.id);
     
     return (
-      <Pressable 
-        style={[
-          styles.listItem,
-          { backgroundColor: colors.backgroundSecondary },
-        ]}
-        onPress={() => handleSelectList(item.id)}
-        onLongPress={() => handleDelete(item)}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
-          <Feather 
-            name={item.is_inbox ? 'inbox' : 'folder'} 
-            size={20} 
-            color={colors.purple} 
-          />
-        </View>
-        <View style={styles.listContent}>
-          <Text style={[styles.listName, { color: colors.foreground }]}>{item.name}</Text>
-          {item.description && (
-            <Text style={[styles.listDescription, { color: colors.comment }]} numberOfLines={1}>
-              {item.description}
-            </Text>
-          )}
-        </View>
-        <View style={[styles.taskCount, { backgroundColor: colors.backgroundTertiary }]}>
-          <Text style={[styles.taskCountText, { color: colors.comment }]}>{taskCount}</Text>
-        </View>
-        <Feather name="chevron-right" size={16} color={colors.comment} />
-      </Pressable>
+      <View style={[styles.listItem, { backgroundColor: colors.backgroundSecondary }]}>
+        <Pressable 
+          style={styles.listItemContent}
+          onPress={() => handleSelectList(item.id)}
+        >
+          <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
+            <Feather 
+              name={item.is_inbox ? 'inbox' : 'folder'} 
+              size={20} 
+              color={colors.purple} 
+            />
+          </View>
+          <View style={styles.listContent}>
+            <Text style={[styles.listName, { color: colors.foreground }]}>{item.name}</Text>
+            {item.description && (
+              <Text style={[styles.listDescription, { color: colors.comment }]} numberOfLines={1}>
+                {item.description}
+              </Text>
+            )}
+          </View>
+          <View style={[styles.taskCount, { backgroundColor: colors.backgroundTertiary }]}>
+            <Text style={[styles.taskCountText, { color: colors.comment }]}>{taskCount}</Text>
+          </View>
+        </Pressable>
+        
+        {!item.is_inbox && (
+          <TouchableOpacity 
+            style={styles.editButton}
+            onPress={() => openEditModal(item)}
+          >
+            <Feather name="more-horizontal" size={20} color={colors.comment} />
+          </TouchableOpacity>
+        )}
+        
+        <Pressable 
+          style={styles.chevronButton}
+          onPress={() => handleSelectList(item.id)}
+        >
+          <Feather name="chevron-right" size={16} color={colors.comment} />
+        </Pressable>
+      </View>
     );
   };
 
@@ -125,34 +174,36 @@ export default function ListsScreen() {
       {/* Add list button */}
       <TouchableOpacity 
         style={[styles.addButton, { backgroundColor: colors.backgroundSecondary }]}
-        onPress={() => setShowModal(true)}
+        onPress={openCreateModal}
       >
         <Feather name="plus" size={20} color={colors.purple} />
         <Text style={[styles.addButtonText, { color: colors.purple }]}>New List</Text>
       </TouchableOpacity>
 
-      {/* Create List Modal */}
+      {/* Create/Edit List Modal */}
       <Modal
         visible={showModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={closeModal}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.backgroundTertiary }]}>
-              <TouchableOpacity onPress={() => setShowModal(false)}>
+              <TouchableOpacity onPress={closeModal}>
                 <Feather name="x" size={24} color={colors.foreground} />
               </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: colors.foreground }]}>New List</Text>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>
+                {editingList ? 'Edit List' : 'New List'}
+              </Text>
               <TouchableOpacity 
-                onPress={handleCreateList}
-                disabled={!newListName.trim()}
+                onPress={handleSave}
+                disabled={!listName.trim()}
               >
                 <Feather 
                   name="check" 
                   size={24} 
-                  color={newListName.trim() ? colors.purple : colors.comment} 
+                  color={listName.trim() ? colors.purple : colors.comment} 
                 />
               </TouchableOpacity>
             </View>
@@ -162,8 +213,8 @@ export default function ListsScreen() {
                 <Feather name="folder" size={18} color={colors.comment} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.foreground }]}
-                  value={newListName}
-                  onChangeText={setNewListName}
+                  value={listName}
+                  onChangeText={setListName}
                   placeholder="List name"
                   placeholderTextColor={colors.comment}
                   autoFocus
@@ -174,12 +225,23 @@ export default function ListsScreen() {
                 <Feather name="align-left" size={18} color={colors.comment} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.foreground }]}
-                  value={newListDescription}
-                  onChangeText={setNewListDescription}
+                  value={listDescription}
+                  onChangeText={setListDescription}
                   placeholder="Description (optional)"
                   placeholderTextColor={colors.comment}
                 />
               </View>
+
+              {/* Delete button (only for editing, not inbox) */}
+              {editingList && !editingList.is_inbox && (
+                <TouchableOpacity 
+                  style={[styles.deleteButton, { borderColor: colors.red }]}
+                  onPress={() => handleDelete(editingList)}
+                >
+                  <Feather name="trash-2" size={18} color={colors.red} />
+                  <Text style={[styles.deleteButtonText, { color: colors.red }]}>Delete List</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -195,9 +257,15 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
+    overflow: 'hidden',
+  },
+  listItemContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
   },
   iconContainer: {
     width: 40,
@@ -222,11 +290,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
-    marginRight: spacing.sm,
   },
   taskCountText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
+  },
+  editButton: {
+    padding: spacing.md,
+  },
+  chevronButton: {
+    paddingRight: spacing.md,
+    paddingVertical: spacing.md,
   },
   empty: {
     flex: 1,
@@ -300,5 +374,19 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: fontSize.md,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.lg,
+    borderWidth: 1,
+  },
+  deleteButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    marginLeft: spacing.sm,
   },
 });
