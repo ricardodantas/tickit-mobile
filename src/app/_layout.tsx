@@ -39,11 +39,19 @@ function RootLayoutContent() {
           contentStyle: {
             backgroundColor: colors.background,
           },
+          animation: 'slide_from_right',
         }}
       >
         <Stack.Screen 
           name="(tabs)" 
           options={{ headerShown: false }} 
+        />
+        <Stack.Screen
+          name="list/[id]"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
         />
         <Stack.Screen
           name="task/[id]"
