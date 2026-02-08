@@ -3,16 +3,21 @@
 import { View, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/ThemeContext';
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const TabIcon = ({ name, color }: { name: keyof typeof Feather.glyphMap; color: string }) => (
     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
       <Feather name={name} size={22} color={color} />
     </View>
   );
+
+  const tabBarHeight = 50;
+  const totalHeight = tabBarHeight + insets.bottom;
 
   return (
     <Tabs
@@ -22,13 +27,16 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
-          height: Platform.OS === 'ios' ? 80 : 60,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-          paddingTop: 8,
+          height: totalHeight,
+          paddingBottom: insets.bottom,
+        },
+        tabBarItemStyle: {
+          height: tabBarHeight,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          marginTop: 0,
         },
         headerShown: false,
       }}
