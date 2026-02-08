@@ -247,7 +247,7 @@ export default function SettingsScreen() {
             <Text style={[styles.aboutLabel, { color: colors.comment }]}>Version</Text>
             <Text style={[styles.aboutValue, { color: colors.foreground }]}>1.0.0</Text>
           </View>
-          <View style={styles.aboutRow}>
+          <View style={[styles.aboutRow, { borderBottomWidth: 0 }]}>
             <Text style={[styles.aboutLabel, { color: colors.comment }]}>Sync Server</Text>
             <Text style={[styles.aboutValue, { color: colors.foreground }]}>tickit-sync</Text>
           </View>
