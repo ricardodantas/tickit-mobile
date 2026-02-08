@@ -14,6 +14,8 @@ export default function TasksScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const tasks = useFilteredTasks();
+  const lists = useStore(state => state.lists);
+  const allTags = useStore(state => state.tags);
   const toggleTask = useStore(state => state.toggleTask);
   const syncStatus = useStore(state => state.syncStatus);
   const sync = useStore(state => state.sync);
@@ -28,6 +30,12 @@ export default function TasksScreen() {
     await toggleTask(id);
   };
 
+  const getList = (listId: string) => lists.find(l => l.id === listId);
+  const getTaskTags = (tagIds?: string[]) => {
+    if (!tagIds || tagIds.length === 0) return [];
+    return allTags.filter(t => tagIds.includes(t.id));
+  };
+
   const getPriorityColor = (priority: Priority): string => {
     switch (priority) {
       case 'urgent': return colors.red;
@@ -40,6 +48,8 @@ export default function TasksScreen() {
   const renderTaskItem = ({ item }: { item: Task }) => {
     const priorityColor = getPriorityColor(item.priority);
     const isOverdue = item.due_date && isDueOverdue(item.due_date) && !item.completed;
+    const list = getList(item.list_id);
+    const taskTags = getTaskTags(item.tag_ids);
     
     return (
       <Pressable 
@@ -67,18 +77,34 @@ export default function TasksScreen() {
           >
             {item.title}
           </Text>
-          {item.due_date && (
-            <View style={styles.taskMeta}>
-              <Feather 
-                name="calendar" 
-                size={12} 
-                color={isOverdue ? colors.red : colors.comment} 
-              />
-              <Text style={[styles.taskDue, { color: isOverdue ? colors.red : colors.comment }]}>
-                {formatDate(item.due_date)}
-              </Text>
-            </View>
-          )}
+          
+          {/* Meta row: due date, list, tags */}
+          <View style={styles.taskMeta}>
+            {item.due_date && (
+              <View style={styles.metaItem}>
+                <Feather 
+                  name="calendar" 
+                  size={11} 
+                  color={isOverdue ? colors.red : colors.comment} 
+                />
+                <Text style={[styles.metaText, { color: isOverdue ? colors.red : colors.comment }]}>
+                  {formatDate(item.due_date)}
+                </Text>
+              </View>
+            )}
+            {list && !list.is_inbox && (
+              <View style={styles.metaItem}>
+                <Feather name="folder" size={11} color={colors.comment} />
+                <Text style={[styles.metaText, { color: colors.comment }]}>{list.name}</Text>
+              </View>
+            )}
+            {taskTags.map(tag => (
+              <View key={tag.id} style={[styles.tagBadge, { backgroundColor: tag.color + '22' }]}>
+                <View style={[styles.tagDot, { backgroundColor: tag.color }]} />
+                <Text style={[styles.tagText, { color: tag.color }]}>{tag.name}</Text>
+              </View>
+            ))}
+          </View>
         </View>
         
         <View style={[styles.priorityDot, { backgroundColor: priorityColor }]} />
@@ -208,11 +234,34 @@ const styles = StyleSheet.create({
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     marginTop: 4,
+    gap: 6,
   },
-  taskDue: {
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaText: {
     fontSize: fontSize.xs,
-    marginLeft: 4,
+    marginLeft: 3,
+  },
+  tagBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  tagDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 4,
+  },
+  tagText: {
+    fontSize: 10,
+    fontWeight: '500',
   },
   priorityDot: {
     width: 8,
