@@ -14,8 +14,6 @@ export default function ListsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const lists = useStore(state => state.lists);
-  const selectedListId = useStore(state => state.selectedListId);
-  const selectList = useStore(state => state.selectList);
   const addList = useStore(state => state.addList);
   const deleteList = useStore(state => state.deleteList);
   const tasks = useStore(state => state.tasks);
@@ -29,9 +27,8 @@ export default function ListsScreen() {
   };
 
   const handleSelectList = (listId: string) => {
-    selectList(listId);
-    // Navigate to the Tasks tab with this list selected
-    router.push('/(tabs)');
+    // Navigate to the list detail screen
+    router.push(`/list/${listId}`);
   };
 
   const handleDelete = (list: List) => {
@@ -68,7 +65,6 @@ export default function ListsScreen() {
   };
 
   const renderListItem = ({ item }: { item: List }) => {
-    const isSelected = item.id === selectedListId;
     const taskCount = getTaskCount(item.id);
     
     return (
@@ -76,7 +72,6 @@ export default function ListsScreen() {
         style={[
           styles.listItem,
           { backgroundColor: colors.backgroundSecondary },
-          isSelected && { borderColor: colors.purple, borderWidth: 2 },
         ]}
         onPress={() => handleSelectList(item.id)}
         onLongPress={() => handleDelete(item)}
