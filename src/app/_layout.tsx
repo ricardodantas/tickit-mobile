@@ -48,28 +48,28 @@ function RootLayoutContent() {
         <Stack.Screen
           name="task/[id]"
           options={{
-            title: 'Task',
+            headerShown: false,
             presentation: 'modal',
           }}
         />
         <Stack.Screen
           name="task/new"
           options={{
-            title: 'New Task',
+            headerShown: false,
             presentation: 'modal',
           }}
         />
         <Stack.Screen
           name="settings"
           options={{
-            title: 'Settings',
+            headerShown: false,
             presentation: 'modal',
           }}
         />
         <Stack.Screen
           name="themes"
           options={{
-            title: 'Themes',
+            headerShown: false,
             presentation: 'modal',
           }}
         />

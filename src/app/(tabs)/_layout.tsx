@@ -41,6 +41,7 @@ export default function TabLayout() {
         name="lists"
         options={{
           title: 'Lists',
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <Feather name="list" size={24} color={color} />
           ),
@@ -50,6 +51,7 @@ export default function TabLayout() {
         name="tags"
         options={{
           title: 'Tags',
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <Feather name="tag" size={24} color={color} />
           ),
