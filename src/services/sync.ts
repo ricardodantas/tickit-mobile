@@ -1,9 +1,14 @@
 // Sync service for communicating with tickit-sync server
 
 import * as SecureStore from 'expo-secure-store';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { SyncRequest, SyncResponse, SyncRecord, SyncConfig } from '../types';
 import * as db from './database';
+
+// Generate UUID using expo-crypto
+function uuidv4(): string {
+  return Crypto.randomUUID();
+}
 
 const DEVICE_ID_KEY = 'tickit_device_id';
 const SYNC_CONFIG_KEY = 'tickit_sync_config';

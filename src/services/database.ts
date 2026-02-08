@@ -2,8 +2,13 @@
 // Uses expo-sqlite on native, in-memory store on web
 
 import { Platform } from 'react-native';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { Task, List, Tag } from '../types';
+
+// Generate UUID using expo-crypto
+function uuidv4(): string {
+  return Crypto.randomUUID();
+}
 
 // ==================== Platform Detection ====================
 const isWeb = Platform.OS === 'web';
