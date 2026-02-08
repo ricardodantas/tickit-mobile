@@ -1,6 +1,6 @@
 // Tab layout with bottom navigation
 
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeContext';
@@ -22,6 +22,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
+          height: Platform.OS === 'ios' ? 80 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
