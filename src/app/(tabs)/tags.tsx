@@ -1,6 +1,7 @@
 // Tags screen
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
@@ -38,7 +39,7 @@ export default function TagsScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
         <View style={styles.headerContent}>
@@ -71,7 +72,7 @@ export default function TagsScreen() {
         <Feather name="plus" size={20} color={colors.purple} />
         <Text style={[styles.addButtonText, { color: colors.purple }]}>New Tag</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -1,6 +1,7 @@
 // Tasks screen - main task list
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore, useFilteredTasks, useSelectedList } from '../../store';
@@ -83,7 +84,7 @@ export default function TasksScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
         <View style={styles.headerContent}>
@@ -131,7 +132,7 @@ export default function TasksScreen() {
       >
         <Feather name="plus" size={28} color="#fff" />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

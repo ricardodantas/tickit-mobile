@@ -2,16 +2,19 @@
 
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useTheme } from '../../theme/ThemeContext';
 
 export default function TabLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#bd93f9',
-        tabBarInactiveTintColor: '#6272a4',
+        tabBarActiveTintColor: colors.purple,
+        tabBarInactiveTintColor: colors.comment,
         tabBarStyle: {
-          backgroundColor: '#1e1f29',
-          borderTopColor: '#44475a',
+          backgroundColor: colors.backgroundSecondary,
+          borderTopColor: colors.backgroundTertiary,
         },
         headerShown: false,
       }}
@@ -20,8 +23,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Tasks',
-          tabBarIcon: ({ color }) => (
-            <Feather name="check-circle" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Feather 
+              name={focused ? 'check-circle' : 'circle'} 
+              size={24} 
+              color={color} 
+            />
           ),
         }}
       />
