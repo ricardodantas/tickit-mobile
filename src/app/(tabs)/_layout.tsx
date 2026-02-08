@@ -10,6 +10,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: colors.purple,
         tabBarInactiveTintColor: colors.comment,
         tabBarStyle: {
@@ -17,17 +18,12 @@ export default function TabLayout() {
           borderTopColor: colors.backgroundTertiary,
           borderTopWidth: 0.5,
         },
-        headerStyle: {
-          backgroundColor: colors.backgroundSecondary,
-        },
-        headerTintColor: colors.foreground,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Tasks',
-          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Feather 
               name={focused ? 'check-circle' : 'circle'} 
