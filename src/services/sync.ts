@@ -114,12 +114,16 @@ async function gatherLocalChanges(lastSync: string | null): Promise<SyncRecord[]
   
   if (lastSync) {
     // Incremental sync
+    console.log('[Sync] Gathering changes since:', lastSync);
     const tasks = await db.getTasksSince(lastSync);
+    console.log('[Sync] Found', tasks.length, 'modified tasks');
     for (const task of tasks) {
+      console.log('[Sync]   Task:', task.title, 'updated_at:', task.updated_at);
       changes.push({ type: 'task', ...task });
     }
     
     const lists = await db.getListsSince(lastSync);
+    console.log('[Sync] Found', lists.length, 'modified lists');
     for (const list of lists) {
       changes.push({ type: 'list', ...list });
     }
