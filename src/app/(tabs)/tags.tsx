@@ -27,6 +27,16 @@ export default function TagsScreen() {
     );
   };
 
+  const renderTagItem = ({ item }: { item: Tag }) => (
+    <Pressable 
+      style={[styles.tagItem, { backgroundColor: colors.backgroundSecondary }]}
+      onLongPress={() => handleDelete(item)}
+    >
+      <View style={[styles.tagColor, { backgroundColor: item.color }]} />
+      <Text style={[styles.tagName, { color: colors.foreground }]}>{item.name}</Text>
+    </Pressable>
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -42,19 +52,7 @@ export default function TagsScreen() {
       <FlatList
         data={tags}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable 
-            style={({ pressed }) => [
-              styles.tagItem,
-              { backgroundColor: colors.backgroundSecondary },
-              pressed && styles.tagItemPressed,
-            ]}
-            onLongPress={() => handleDelete(item)}
-          >
-            <View style={[styles.tagColor, { backgroundColor: item.color }]} />
-            <Text style={[styles.tagName, { color: colors.foreground }]}>{item.name}</Text>
-          </Pressable>
-        )}
+        renderItem={renderTagItem}
         contentContainerStyle={styles.list}
         numColumns={2}
         ListEmptyComponent={
@@ -108,9 +106,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     margin: spacing.xs,
-  },
-  tagItemPressed: {
-    opacity: 0.7,
   },
   tagColor: {
     width: 16,

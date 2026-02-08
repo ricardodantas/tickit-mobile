@@ -36,6 +36,40 @@ export default function ListsScreen() {
     );
   };
 
+  const renderListItem = ({ item }: { item: List }) => {
+    const isSelected = item.id === selectedListId;
+    
+    return (
+      <Pressable 
+        style={[
+          styles.listItem,
+          { backgroundColor: colors.backgroundSecondary },
+          isSelected && { borderColor: colors.purple, borderWidth: 2 },
+        ]}
+        onPress={() => selectList(item.id)}
+        onLongPress={() => handleDelete(item)}
+      >
+        <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
+          <Feather 
+            name={item.is_inbox ? 'inbox' : 'folder'} 
+            size={20} 
+            color={colors.purple} 
+          />
+        </View>
+        <View style={styles.listContent}>
+          <Text style={[styles.listName, { color: colors.foreground }]}>{item.name}</Text>
+          {item.description && (
+            <Text style={[styles.listDescription, { color: colors.comment }]}>{item.description}</Text>
+          )}
+        </View>
+        <View style={[styles.taskCount, { backgroundColor: colors.backgroundTertiary }]}>
+          <Text style={[styles.taskCountText, { color: colors.comment }]}>{getTaskCount(item.id)}</Text>
+        </View>
+        <Feather name="chevron-right" size={16} color={colors.comment} />
+      </Pressable>
+    );
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -51,36 +85,7 @@ export default function ListsScreen() {
       <FlatList
         data={lists}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable 
-            style={({ pressed }) => [
-              styles.listItem,
-              { backgroundColor: colors.backgroundSecondary },
-              item.id === selectedListId && { borderColor: colors.purple, borderWidth: 2 },
-              pressed && styles.listItemPressed,
-            ]}
-            onPress={() => selectList(item.id)}
-            onLongPress={() => handleDelete(item)}
-          >
-            <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
-              <Feather 
-                name={item.is_inbox ? 'inbox' : 'folder'} 
-                size={20} 
-                color={colors.purple} 
-              />
-            </View>
-            <View style={styles.listContent}>
-              <Text style={[styles.listName, { color: colors.foreground }]}>{item.name}</Text>
-              {item.description && (
-                <Text style={[styles.listDescription, { color: colors.comment }]}>{item.description}</Text>
-              )}
-            </View>
-            <View style={[styles.taskCount, { backgroundColor: colors.backgroundTertiary }]}>
-              <Text style={[styles.taskCountText, { color: colors.comment }]}>{getTaskCount(item.id)}</Text>
-            </View>
-            <Feather name="chevron-right" size={16} color={colors.comment} />
-          </Pressable>
-        )}
+        renderItem={renderListItem}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -132,9 +137,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
-  },
-  listItemPressed: {
-    opacity: 0.7,
   },
   iconContainer: {
     width: 40,
