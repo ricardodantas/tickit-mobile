@@ -82,14 +82,16 @@ export default function TagsScreen() {
   };
 
   const renderTagItem = ({ item }: { item: Tag }) => (
-    <Pressable 
-      style={[styles.tagItem, { backgroundColor: colors.backgroundSecondary }]}
-      onPress={() => openEditModal(item)}
-    >
+    <View style={[styles.tagItem, { backgroundColor: colors.backgroundSecondary }]}>
       <View style={[styles.tagColor, { backgroundColor: item.color }]} />
       <Text style={[styles.tagName, { color: colors.foreground }]}>{item.name}</Text>
-      <Feather name="chevron-right" size={16} color={colors.comment} />
-    </Pressable>
+      <TouchableOpacity 
+        style={styles.editButton}
+        onPress={() => openEditModal(item)}
+      >
+        <Feather name="more-horizontal" size={20} color={colors.comment} />
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -214,6 +216,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
+    paddingRight: 0,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
   },
@@ -226,6 +229,9 @@ const styles = StyleSheet.create({
   tagName: {
     fontSize: fontSize.md,
     flex: 1,
+  },
+  editButton: {
+    padding: spacing.md,
   },
   empty: {
     flex: 1,
