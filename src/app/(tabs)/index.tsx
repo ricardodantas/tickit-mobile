@@ -1,11 +1,11 @@
 // Tasks screen - main task list
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore, useFilteredTasks, useSelectedList } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
+import { ScreenWrapper } from '../../components';
 import { spacing, borderRadius, fontSize } from '../../theme';
 import { Task, Priority } from '../../types';
 
@@ -83,31 +83,30 @@ export default function TasksScreen() {
     );
   };
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-        <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.foreground }]}>{selectedList?.name ?? 'All Tasks'}</Text>
-          <Text style={[styles.subtitle, { color: colors.comment }]}>
-            {incompleteTasks.length} {incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining
-          </Text>
-        </View>
-        <View style={styles.headerRight}>
-          {syncStatus.syncing && (
-            <Feather name="refresh-cw" size={18} color={colors.comment} style={styles.syncIcon} />
-          )}
-          {syncStatus.last_error && !syncStatus.syncing && (
-            <TouchableOpacity onPress={sync} style={styles.headerButton}>
-              <Feather name="alert-circle" size={20} color={colors.red} />
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/settings')}>
-            <Feather name="settings" size={20} color={colors.comment} />
-          </TouchableOpacity>
-        </View>
-      </View>
+  const headerRight = (
+    <>
+      {syncStatus.syncing && (
+        <Feather name="refresh-cw" size={18} color={colors.comment} style={styles.syncIcon} />
+      )}
+      {syncStatus.last_error && !syncStatus.syncing && (
+        <TouchableOpacity onPress={sync} style={styles.headerButton}>
+          <Feather name="alert-circle" size={20} color={colors.red} />
+        </TouchableOpacity>
+      )}
+      <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/settings')}>
+        <Feather name="settings" size={20} color={colors.comment} />
+      </TouchableOpacity>
+    </>
+  );
 
+  return (
+    <ScreenWrapper
+      header={{
+        title: selectedList?.name ?? 'All Tasks',
+        subtitle: `${incompleteTasks.length} ${incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining`,
+        rightContent: headerRight,
+      }}
+    >
       {/* Task list */}
       <FlatList
         data={tasks}
@@ -127,12 +126,12 @@ export default function TasksScreen() {
 
       {/* FAB */}
       <TouchableOpacity 
-        style={StyleSheet.flatten([styles.fab, { backgroundColor: colors.purple }])}
+        style={[styles.fab, { backgroundColor: colors.purple }]}
         onPress={() => router.push('/task/new')}
       >
         <Feather name="plus" size={28} color="#fff" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
@@ -157,39 +156,12 @@ function formatDate(date: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 16,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   headerButton: {
     padding: spacing.sm,
     marginLeft: spacing.xs,
   },
   syncIcon: {
     marginRight: spacing.sm,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
   },
   list: {
     padding: spacing.md,

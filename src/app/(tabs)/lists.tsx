@@ -1,10 +1,10 @@
 // Lists screen
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
+import { ScreenWrapper } from '../../components';
 import { spacing, borderRadius, fontSize } from '../../theme';
 import { List } from '../../types';
 
@@ -72,17 +72,12 @@ export default function ListsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-        <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Lists</Text>
-          <Text style={[styles.subtitle, { color: colors.comment }]}>
-            {lists.length} {lists.length === 1 ? 'list' : 'lists'}
-          </Text>
-        </View>
-      </View>
-
+    <ScreenWrapper
+      header={{
+        title: 'Lists',
+        subtitle: `${lists.length} ${lists.length === 1 ? 'list' : 'lists'}`,
+      }}
+    >
       <FlatList
         data={lists}
         keyExtractor={(item) => item.id}
@@ -104,31 +99,11 @@ export default function ListsScreen() {
         <Feather name="plus" size={20} color={colors.purple} />
         <Text style={[styles.addButtonText, { color: colors.purple }]}>New List</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: 16,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
-  },
   list: {
     padding: spacing.md,
   },

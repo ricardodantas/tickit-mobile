@@ -1,10 +1,10 @@
 // Tags screen
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
+import { ScreenWrapper } from '../../components';
 import { spacing, borderRadius, fontSize } from '../../theme';
 import { Tag } from '../../types';
 
@@ -39,17 +39,12 @@ export default function TagsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-        <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Tags</Text>
-          <Text style={[styles.subtitle, { color: colors.comment }]}>
-            {tags.length} {tags.length === 1 ? 'tag' : 'tags'}
-          </Text>
-        </View>
-      </View>
-
+    <ScreenWrapper
+      header={{
+        title: 'Tags',
+        subtitle: `${tags.length} ${tags.length === 1 ? 'tag' : 'tags'}`,
+      }}
+    >
       <FlatList
         data={tags}
         keyExtractor={(item) => item.id}
@@ -72,31 +67,11 @@ export default function TagsScreen() {
         <Feather name="plus" size={20} color={colors.purple} />
         <Text style={[styles.addButtonText, { color: colors.purple }]}>New Tag</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: 16,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
-  },
   list: {
     padding: spacing.md,
   },
