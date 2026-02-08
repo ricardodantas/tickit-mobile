@@ -16,6 +16,12 @@ export default function TabLayout() {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
         },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
+        tabBarIconStyle: {
+          marginBottom: -2,
+        },
         headerShown: false,
       }}
     >
