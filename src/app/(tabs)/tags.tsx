@@ -18,11 +18,34 @@ export default function TagsScreen() {
   const { colors } = useTheme();
   const tags = useStore(state => state.tags);
   const addTag = useStore(state => state.addTag);
+  const updateTag = useStore(state => state.updateTag);
   const deleteTag = useStore(state => state.deleteTag);
 
   const [showModal, setShowModal] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [tagName, setTagName] = useState('');
   const [selectedColor, setSelectedColor] = useState(TAG_COLORS[0]);
+
+  const openCreateModal = () => {
+    setEditingTag(null);
+    setTagName('');
+    setSelectedColor(TAG_COLORS[0]);
+    setShowModal(true);
+  };
+
+  const openEditModal = (tag: Tag) => {
+    setEditingTag(tag);
+    setTagName(tag.name);
+    setSelectedColor(tag.color);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingTag(null);
+    setTagName('');
+    setSelectedColor(TAG_COLORS[0]);
+  };
 
   const handleDelete = (tag: Tag) => {
     Alert.alert(
@@ -39,26 +62,33 @@ export default function TagsScreen() {
     );
   };
 
-  const handleCreateTag = async () => {
-    if (!newTagName.trim()) return;
+  const handleSave = async () => {
+    if (!tagName.trim()) return;
     
-    await addTag({
-      name: newTagName.trim(),
-      color: selectedColor,
-    });
+    if (editingTag) {
+      await updateTag({
+        ...editingTag,
+        name: tagName.trim(),
+        color: selectedColor,
+      });
+    } else {
+      await addTag({
+        name: tagName.trim(),
+        color: selectedColor,
+      });
+    }
     
-    setNewTagName('');
-    setSelectedColor(TAG_COLORS[0]);
-    setShowModal(false);
+    closeModal();
   };
 
   const renderTagItem = ({ item }: { item: Tag }) => (
     <Pressable 
       style={[styles.tagItem, { backgroundColor: colors.backgroundSecondary }]}
-      onLongPress={() => handleDelete(item)}
+      onPress={() => openEditModal(item)}
     >
       <View style={[styles.tagColor, { backgroundColor: item.color }]} />
       <Text style={[styles.tagName, { color: colors.foreground }]}>{item.name}</Text>
+      <Feather name="chevron-right" size={16} color={colors.comment} />
     </Pressable>
   );
 
@@ -74,7 +104,7 @@ export default function TagsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderTagItem}
         contentContainerStyle={styles.list}
-        numColumns={2}
+        numColumns={1}
         ListEmptyComponent={
           <View style={styles.empty}>
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.backgroundSecondary }]}>
@@ -89,34 +119,36 @@ export default function TagsScreen() {
       {/* Add tag button */}
       <TouchableOpacity 
         style={[styles.addButton, { backgroundColor: colors.backgroundSecondary }]}
-        onPress={() => setShowModal(true)}
+        onPress={openCreateModal}
       >
         <Feather name="plus" size={20} color={colors.purple} />
         <Text style={[styles.addButtonText, { color: colors.purple }]}>New Tag</Text>
       </TouchableOpacity>
 
-      {/* Create Tag Modal */}
+      {/* Create/Edit Tag Modal */}
       <Modal
         visible={showModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={closeModal}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.backgroundTertiary }]}>
-              <TouchableOpacity onPress={() => setShowModal(false)}>
+              <TouchableOpacity onPress={closeModal}>
                 <Feather name="x" size={24} color={colors.foreground} />
               </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: colors.foreground }]}>New Tag</Text>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>
+                {editingTag ? 'Edit Tag' : 'New Tag'}
+              </Text>
               <TouchableOpacity 
-                onPress={handleCreateTag}
-                disabled={!newTagName.trim()}
+                onPress={handleSave}
+                disabled={!tagName.trim()}
               >
                 <Feather 
                   name="check" 
                   size={24} 
-                  color={newTagName.trim() ? colors.purple : colors.comment} 
+                  color={tagName.trim() ? colors.purple : colors.comment} 
                 />
               </TouchableOpacity>
             </View>
@@ -126,8 +158,8 @@ export default function TagsScreen() {
                 <View style={[styles.previewDot, { backgroundColor: selectedColor }]} />
                 <TextInput
                   style={[styles.input, { color: colors.foreground }]}
-                  value={newTagName}
-                  onChangeText={setNewTagName}
+                  value={tagName}
+                  onChangeText={setTagName}
                   placeholder="Tag name"
                   placeholderTextColor={colors.comment}
                   autoFocus
@@ -152,6 +184,20 @@ export default function TagsScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {/* Delete button (only for editing) */}
+              {editingTag && (
+                <TouchableOpacity 
+                  style={[styles.deleteButton, { borderColor: colors.red }]}
+                  onPress={() => {
+                    closeModal();
+                    handleDelete(editingTag);
+                  }}
+                >
+                  <Feather name="trash-2" size={18} color={colors.red} />
+                  <Text style={[styles.deleteButtonText, { color: colors.red }]}>Delete Tag</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -165,18 +211,17 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   tagItem: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
-    margin: spacing.xs,
+    marginBottom: spacing.sm,
   },
   tagColor: {
     width: 16,
     height: 16,
     borderRadius: 4,
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
   },
   tagName: {
     fontSize: fontSize.md,
@@ -279,5 +324,19 @@ const styles = StyleSheet.create({
   colorOptionSelected: {
     borderWidth: 3,
     borderColor: '#fff',
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.xl,
+    borderWidth: 1,
+  },
+  deleteButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    marginLeft: spacing.sm,
   },
 });
