@@ -1,11 +1,18 @@
 // Tab layout with bottom navigation
 
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeContext';
 
 export default function TabLayout() {
   const { colors } = useTheme();
+
+  const TabIcon = ({ name, color }: { name: keyof typeof Feather.glyphMap; color: string }) => (
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Feather name={name} size={22} color={color} />
+    </View>
+  );
 
   return (
     <Tabs
@@ -16,11 +23,9 @@ export default function TabLayout() {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
         },
-        tabBarItemStyle: {
-          paddingVertical: 4,
-        },
-        tabBarIconStyle: {
-          marginBottom: -2,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          marginTop: 0,
         },
         headerShown: false,
       }}
@@ -30,11 +35,7 @@ export default function TabLayout() {
         options={{
           title: 'Tasks',
           tabBarIcon: ({ color, focused }) => (
-            <Feather 
-              name={focused ? 'check-circle' : 'circle'} 
-              size={24} 
-              color={color} 
-            />
+            <TabIcon name={focused ? 'check-circle' : 'circle'} color={color} />
           ),
         }}
       />
@@ -42,18 +43,14 @@ export default function TabLayout() {
         name="lists"
         options={{
           title: 'Lists',
-          tabBarIcon: ({ color }) => (
-            <Feather name="list" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="list" color={color} />,
         }}
       />
       <Tabs.Screen
         name="tags"
         options={{
           title: 'Tags',
-          tabBarIcon: ({ color }) => (
-            <Feather name="tag" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="tag" color={color} />,
         }}
       />
     </Tabs>
