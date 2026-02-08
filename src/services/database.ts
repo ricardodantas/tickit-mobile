@@ -34,6 +34,27 @@ async function getDb() {
   return db;
 }
 
+// Run database migrations for existing databases
+async function runMigrations(database: any): Promise<void> {
+  // Check if tag_ids column exists
+  const columns = await database.getAllAsync<{ name: string }>(
+    "PRAGMA table_info(tasks)"
+  );
+  const columnNames = columns.map((c: any) => c.name);
+  
+  // Add tag_ids column if missing
+  if (!columnNames.includes('tag_ids')) {
+    console.log('[DB] Adding tag_ids column to tasks table');
+    await database.execAsync("ALTER TABLE tasks ADD COLUMN tag_ids TEXT DEFAULT '[]'");
+  }
+  
+  // Add completed_at column if missing
+  if (!columnNames.includes('completed_at')) {
+    console.log('[DB] Adding completed_at column to tasks table');
+    await database.execAsync("ALTER TABLE tasks ADD COLUMN completed_at TEXT");
+  }
+}
+
 export async function initDatabase(): Promise<void> {
   if (isWeb) {
     // Initialize with default inbox for web
@@ -182,7 +203,9 @@ export async function initDatabase(): Promise<void> {
       priority TEXT NOT NULL DEFAULT 'medium',
       completed INTEGER NOT NULL DEFAULT 0,
       list_id TEXT NOT NULL,
+      tag_ids TEXT DEFAULT '[]',
       due_date TEXT,
+      completed_at TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (list_id) REFERENCES lists(id)
@@ -211,6 +234,9 @@ export async function initDatabase(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
     CREATE INDEX IF NOT EXISTS idx_tombstones_deleted ON sync_tombstones(deleted_at);
   `);
+
+  // Run migrations for existing databases
+  await runMigrations(database);
 
   await ensureInbox();
 }
