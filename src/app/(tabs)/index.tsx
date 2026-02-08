@@ -4,11 +4,13 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'r
 import { Link, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore, useFilteredTasks, useSelectedList } from '../../store';
-import { colors, spacing, borderRadius, fontSize } from '../../theme';
+import { useTheme } from '../../theme/ThemeContext';
+import { spacing, borderRadius, fontSize } from '../../theme';
 import { Task, Priority } from '../../types';
 
 export default function TasksScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const tasks = useFilteredTasks();
   const selectedList = useSelectedList();
   const toggleTask = useStore(state => state.toggleTask);
@@ -22,12 +24,12 @@ export default function TasksScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
         <View style={styles.headerContent}>
-          <Text style={styles.title}>{selectedList?.name ?? 'All Tasks'}</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.foreground }]}>{selectedList?.name ?? 'All Tasks'}</Text>
+          <Text style={[styles.subtitle, { color: colors.comment }]}>
             {incompleteTasks.length} {incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining
           </Text>
         </View>
@@ -57,23 +59,24 @@ export default function TasksScreen() {
             task={item} 
             onToggle={() => handleToggle(item.id)}
             onPress={() => router.push(`/task/${item.id}`)}
+            colors={colors}
           />
         )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <View style={styles.emptyIconContainer}>
+            <View style={[styles.emptyIconContainer, { backgroundColor: colors.backgroundSecondary }]}>
               <Feather name="check-circle" size={32} color={colors.green} />
             </View>
-            <Text style={styles.emptyText}>No tasks yet</Text>
-            <Text style={styles.emptySubtext}>Tap + to add your first task</Text>
+            <Text style={[styles.emptyText, { color: colors.foreground }]}>No tasks yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.comment }]}>Tap + to add your first task</Text>
           </View>
         }
       />
 
       {/* FAB */}
       <Link href="/task/new" asChild>
-        <TouchableOpacity style={styles.fab}>
+        <TouchableOpacity style={[styles.fab, { backgroundColor: colors.purple }]}>
           <Feather name="plus" size={28} color="#fff" />
         </TouchableOpacity>
       </Link>
@@ -81,23 +84,32 @@ export default function TasksScreen() {
   );
 }
 
-function TaskItem({ task, onToggle, onPress }: { task: Task; onToggle: () => void; onPress: () => void }) {
+function TaskItem({ task, onToggle, onPress, colors }: { task: Task; onToggle: () => void; onPress: () => void; colors: any }) {
+  const getPriorityColor = (priority: Priority): string => {
+    switch (priority) {
+      case 'urgent': return colors.red;
+      case 'high': return colors.orange;
+      case 'medium': return colors.cyan;
+      case 'low': return colors.comment;
+    }
+  };
+
   const priorityColor = getPriorityColor(task.priority);
   
   return (
     <Pressable 
-      style={({ pressed }) => [styles.taskItem, pressed && styles.taskItemPressed]}
+      style={({ pressed }) => [styles.taskItem, { backgroundColor: colors.backgroundSecondary }, pressed && styles.taskItemPressed]}
       onPress={onPress}
     >
       <TouchableOpacity 
-        style={[styles.checkbox, task.completed && styles.checkboxChecked]}
+        style={[styles.checkbox, { borderColor: colors.comment }, task.completed && { backgroundColor: colors.green, borderColor: colors.green }]}
         onPress={onToggle}
       >
         {task.completed && <Feather name="check" size={14} color={colors.background} />}
       </TouchableOpacity>
       
       <View style={styles.taskContent}>
-        <Text style={[styles.taskTitle, task.completed && styles.taskTitleCompleted]}>
+        <Text style={[styles.taskTitle, { color: colors.foreground }, task.completed && { textDecorationLine: 'line-through', color: colors.comment }]}>
           {task.title}
         </Text>
         {task.due_date && (
@@ -107,7 +119,7 @@ function TaskItem({ task, onToggle, onPress }: { task: Task; onToggle: () => voi
               size={12} 
               color={isDueOverdue(task.due_date) && !task.completed ? colors.red : colors.comment} 
             />
-            <Text style={[styles.taskDue, isDueOverdue(task.due_date) && !task.completed && styles.taskDueOverdue]}>
+            <Text style={[styles.taskDue, { color: colors.comment }, isDueOverdue(task.due_date) && !task.completed && { color: colors.red }]}>
               {formatDate(task.due_date)}
             </Text>
           </View>
@@ -118,15 +130,6 @@ function TaskItem({ task, onToggle, onPress }: { task: Task; onToggle: () => voi
       <Feather name="chevron-right" size={16} color={colors.comment} />
     </Pressable>
   );
-}
-
-function getPriorityColor(priority: Priority): string {
-  switch (priority) {
-    case 'urgent': return colors.red;
-    case 'high': return colors.orange;
-    case 'medium': return colors.cyan;
-    case 'low': return colors.comment;
-  }
 }
 
 function isDueOverdue(dueDate: string): boolean {
@@ -152,7 +155,6 @@ function formatDate(date: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -162,7 +164,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.backgroundTertiary,
   },
   headerContent: {
     flex: 1,
@@ -181,11 +182,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.foreground,
   },
   subtitle: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     marginTop: 2,
   },
   list: {
@@ -195,7 +194,6 @@ const styles = StyleSheet.create({
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
@@ -208,26 +206,16 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: colors.comment,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
-  },
-  checkboxChecked: {
-    backgroundColor: colors.green,
-    borderColor: colors.green,
   },
   taskContent: {
     flex: 1,
   },
   taskTitle: {
     fontSize: fontSize.md,
-    color: colors.foreground,
     fontWeight: '500',
-  },
-  taskTitleCompleted: {
-    textDecorationLine: 'line-through',
-    color: colors.comment,
   },
   taskMeta: {
     flexDirection: 'row',
@@ -236,11 +224,7 @@ const styles = StyleSheet.create({
   },
   taskDue: {
     fontSize: fontSize.xs,
-    color: colors.comment,
     marginLeft: 4,
-  },
-  taskDueOverdue: {
-    color: colors.red,
   },
   priorityDot: {
     width: 8,
@@ -258,19 +242,16 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.lg,
   },
   emptyText: {
     fontSize: fontSize.lg,
-    color: colors.foreground,
     fontWeight: '600',
   },
   emptySubtext: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     marginTop: spacing.xs,
   },
   fab: {
@@ -280,7 +261,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.purple,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,

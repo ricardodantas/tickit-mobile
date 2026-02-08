@@ -5,14 +5,16 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
-import { colors, spacing, borderRadius, fontSize } from '../../theme';
-import { Priority, Task } from '../../types';
+import { useTheme } from '../../theme/ThemeContext';
+import { spacing, borderRadius, fontSize } from '../../theme';
+import { Priority } from '../../types';
 
 const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
   const tasks = useStore(state => state.tasks);
   const lists = useStore(state => state.lists);
   const updateTask = useStore(state => state.updateTask);
@@ -27,6 +29,15 @@ export default function TaskDetailScreen() {
   const [listId, setListId] = useState('');
   const [dueDate, setDueDate] = useState('');
 
+  const getPriorityColor = (p: Priority): string => {
+    switch (p) {
+      case 'urgent': return colors.red;
+      case 'high': return colors.orange;
+      case 'medium': return colors.cyan;
+      case 'low': return colors.comment;
+    }
+  };
+
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -39,8 +50,8 @@ export default function TaskDetailScreen() {
 
   if (!task) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.notFound}>Task not found</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.notFound, { color: colors.comment }]}>Task not found</Text>
       </View>
     );
   }
@@ -83,14 +94,14 @@ export default function TaskDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color={colors.foreground} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Edit Task</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Edit Task</Text>
         </View>
         <TouchableOpacity 
           onPress={handleSave} 
@@ -104,7 +115,11 @@ export default function TaskDetailScreen() {
       <View style={styles.content}>
         {/* Completed toggle */}
         <TouchableOpacity 
-          style={[styles.completeButton, task.completed && styles.completeButtonDone]}
+          style={[
+            styles.completeButton, 
+            { backgroundColor: colors.backgroundSecondary, borderColor: colors.backgroundTertiary },
+            task.completed && { borderColor: colors.green, backgroundColor: colors.backgroundTertiary }
+          ]}
           onPress={handleToggle}
         >
           <Feather 
@@ -112,17 +127,17 @@ export default function TaskDetailScreen() {
             size={20} 
             color={task.completed ? colors.green : colors.comment} 
           />
-          <Text style={[styles.completeButtonText, task.completed && { color: colors.green }]}>
+          <Text style={[styles.completeButtonText, { color: colors.foreground }, task.completed && { color: colors.green }]}>
             {task.completed ? 'Completed' : 'Mark Complete'}
           </Text>
         </TouchableOpacity>
 
         {/* Title */}
         <View style={styles.field}>
-          <View style={styles.inputRow}>
+          <View style={[styles.inputRow, { backgroundColor: colors.backgroundSecondary }]}>
             <Feather name="edit-3" size={18} color={colors.comment} style={styles.inputIcon} />
             <TextInput
-              style={styles.titleInput}
+              style={[styles.titleInput, { color: colors.foreground }]}
               value={title}
               onChangeText={setTitle}
               placeholder="What needs to be done?"
@@ -133,10 +148,10 @@ export default function TaskDetailScreen() {
 
         {/* Description */}
         <View style={styles.field}>
-          <View style={styles.inputRow}>
+          <View style={[styles.inputRow, { backgroundColor: colors.backgroundSecondary }]}>
             <Feather name="align-left" size={18} color={colors.comment} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { color: colors.foreground }]}
               value={description}
               onChangeText={setDescription}
               placeholder="Add details..."
@@ -149,21 +164,22 @@ export default function TaskDetailScreen() {
 
         {/* Priority */}
         <View style={styles.field}>
-          <Text style={styles.label}>Priority</Text>
+          <Text style={[styles.label, { color: colors.comment }]}>Priority</Text>
           <View style={styles.priorityRow}>
             {PRIORITIES.map(p => (
               <TouchableOpacity
                 key={p}
                 style={[
                   styles.priorityButton,
-                  priority === p && styles.priorityButtonSelected,
-                  priority === p && { borderColor: getPriorityColor(p) },
+                  { backgroundColor: colors.backgroundSecondary, borderColor: colors.backgroundTertiary },
+                  priority === p && { backgroundColor: colors.backgroundTertiary, borderColor: getPriorityColor(p) },
                 ]}
                 onPress={() => setPriority(p)}
               >
                 <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(p) }]} />
                 <Text style={[
                   styles.priorityText,
+                  { color: colors.comment },
                   priority === p && { color: colors.foreground },
                 ]}>
                   {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -175,14 +191,15 @@ export default function TaskDetailScreen() {
 
         {/* List */}
         <View style={styles.field}>
-          <Text style={styles.label}>List</Text>
+          <Text style={[styles.label, { color: colors.comment }]}>List</Text>
           <View style={styles.listRow}>
             {lists.map(list => (
               <TouchableOpacity
                 key={list.id}
                 style={[
                   styles.listButton,
-                  listId === list.id && styles.listButtonSelected,
+                  { backgroundColor: colors.backgroundSecondary, borderColor: colors.backgroundTertiary },
+                  listId === list.id && { borderColor: colors.purple, backgroundColor: colors.backgroundTertiary },
                 ]}
                 onPress={() => setListId(list.id)}
               >
@@ -193,7 +210,8 @@ export default function TaskDetailScreen() {
                 />
                 <Text style={[
                   styles.listText,
-                  listId === list.id && styles.listTextSelected,
+                  { color: colors.comment },
+                  listId === list.id && { color: colors.foreground },
                 ]}>
                   {list.name}
                 </Text>
@@ -204,10 +222,10 @@ export default function TaskDetailScreen() {
 
         {/* Due Date */}
         <View style={styles.field}>
-          <View style={styles.inputRow}>
+          <View style={[styles.inputRow, { backgroundColor: colors.backgroundSecondary }]}>
             <Feather name="calendar" size={18} color={colors.comment} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.foreground }]}
               value={dueDate}
               onChangeText={setDueDate}
               placeholder="Due date (YYYY-MM-DD)"
@@ -218,7 +236,7 @@ export default function TaskDetailScreen() {
 
         {/* Save Button */}
         <TouchableOpacity 
-          style={[styles.saveButton, !title.trim() && styles.saveButtonDisabled]}
+          style={[styles.saveButton, { backgroundColor: colors.purple }, !title.trim() && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={!title.trim()}
         >
@@ -227,28 +245,18 @@ export default function TaskDetailScreen() {
         </TouchableOpacity>
 
         {/* Delete Button */}
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+        <TouchableOpacity style={[styles.deleteButton, { borderColor: colors.red }]} onPress={handleDelete}>
           <Feather name="trash-2" size={18} color={colors.red} />
-          <Text style={styles.deleteButtonText}>Delete Task</Text>
+          <Text style={[styles.deleteButtonText, { color: colors.red }]}>Delete Task</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
-function getPriorityColor(priority: Priority): string {
-  switch (priority) {
-    case 'urgent': return colors.red;
-    case 'high': return colors.orange;
-    case 'medium': return colors.cyan;
-    case 'low': return colors.comment;
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -257,7 +265,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.backgroundTertiary,
   },
   backButton: {
     padding: spacing.sm,
@@ -269,7 +276,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.foreground,
   },
   saveHeaderButton: {
     padding: spacing.sm,
@@ -282,7 +288,6 @@ const styles = StyleSheet.create({
   },
   notFound: {
     fontSize: fontSize.lg,
-    color: colors.comment,
     textAlign: 'center',
     marginTop: 100,
   },
@@ -290,20 +295,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.lg,
     borderWidth: 2,
-    borderColor: colors.backgroundTertiary,
-  },
-  completeButtonDone: {
-    borderColor: colors.green,
-    backgroundColor: colors.backgroundTertiary,
   },
   completeButtonText: {
     fontSize: fontSize.md,
-    color: colors.foreground,
     fontWeight: '500',
     marginLeft: spacing.sm,
   },
@@ -313,14 +311,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.xs,
     fontWeight: '600',
-    color: colors.comment,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: colors.backgroundSecondary,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
   },
@@ -331,13 +327,11 @@ const styles = StyleSheet.create({
   titleInput: {
     flex: 1,
     fontSize: fontSize.lg,
-    color: colors.foreground,
     fontWeight: '500',
   },
   input: {
     flex: 1,
     fontSize: fontSize.md,
-    color: colors.foreground,
   },
   textArea: {
     minHeight: 60,
@@ -353,14 +347,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
-    backgroundColor: colors.backgroundSecondary,
     borderWidth: 2,
-    borderColor: colors.backgroundTertiary,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
-  },
-  priorityButtonSelected: {
-    backgroundColor: colors.backgroundTertiary,
   },
   priorityDot: {
     width: 8,
@@ -370,7 +359,6 @@ const styles = StyleSheet.create({
   },
   priorityText: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     fontWeight: '500',
   },
   listRow: {
@@ -383,29 +371,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.backgroundSecondary,
     borderWidth: 2,
-    borderColor: colors.backgroundTertiary,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
   },
-  listButtonSelected: {
-    borderColor: colors.purple,
-    backgroundColor: colors.backgroundTertiary,
-  },
   listText: {
     fontSize: fontSize.sm,
-    color: colors.comment,
     marginLeft: spacing.xs,
-  },
-  listTextSelected: {
-    color: colors.foreground,
   },
   saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.purple,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     marginTop: spacing.lg,
@@ -427,12 +404,10 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     marginTop: spacing.md,
     borderWidth: 1,
-    borderColor: colors.red,
   },
   deleteButtonText: {
     fontSize: fontSize.md,
     fontWeight: '600',
-    color: colors.red,
     marginLeft: spacing.sm,
   },
 });
