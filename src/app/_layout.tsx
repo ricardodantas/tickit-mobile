@@ -1,20 +1,41 @@
 // Root layout with navigation and providers
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, AppState } from 'react-native';
 import { useStore } from '../store';
 import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 
 function RootLayoutContent() {
   const initialize = useStore(state => state.initialize);
+  const sync = useStore(state => state.sync);
+  const syncConfig = useStore(state => state.syncConfig);
   const isLoading = useStore(state => state.isLoading);
   const { colors, isDark } = useTheme();
+  const appState = useRef(AppState.currentState);
 
   useEffect(() => {
     initialize();
   }, []);
+
+  // Sync when app comes to foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        console.log('[Sync] App came to foreground, syncing...');
+        sync().catch(console.error);
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [sync]);
 
   if (isLoading) {
     return (

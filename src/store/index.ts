@@ -6,6 +6,9 @@ import * as db from '../services/database';
 import * as syncService from '../services/sync';
 import * as notifications from '../services/notifications';
 
+// Auto-sync interval reference
+let syncIntervalId: ReturnType<typeof setInterval> | null = null;
+
 interface AppState {
   // Data
   tasks: Task[];
@@ -52,6 +55,8 @@ interface AppState {
   loadSyncConfig: () => Promise<void>;
   saveSyncConfig: (config: SyncConfig) => Promise<void>;
   sync: () => Promise<void>;
+  startAutoSync: () => void;
+  stopAutoSync: () => void;
   
   // Notification actions
   enableNotifications: () => Promise<boolean>;
@@ -116,6 +121,7 @@ export const useStore = create<AppState>((set, get) => ({
       // Auto-sync if enabled
       if (syncService.isSyncEnabled(syncConfig)) {
         get().sync().catch(console.error);
+        get().startAutoSync();
       }
     } catch (e) {
       set({ isLoading: false, error: String(e) });
@@ -241,6 +247,14 @@ export const useStore = create<AppState>((set, get) => ({
   saveSyncConfig: async (config) => {
     await syncService.saveSyncConfig(config);
     set({ syncConfig: config });
+    
+    // Restart auto-sync with new config
+    get().stopAutoSync();
+    if (syncService.isSyncEnabled(config)) {
+      get().startAutoSync();
+      // Sync immediately when config is saved
+      get().sync().catch(console.error);
+    }
   },
   
   sync: async () => {
@@ -271,6 +285,36 @@ export const useStore = create<AppState>((set, get) => ({
           last_error: String(e),
         },
       }));
+    }
+  },
+  
+  startAutoSync: () => {
+    const { syncConfig } = get();
+    
+    // Clear existing interval
+    if (syncIntervalId) {
+      clearInterval(syncIntervalId);
+      syncIntervalId = null;
+    }
+    
+    if (!syncService.isSyncEnabled(syncConfig)) return;
+    
+    // Default to 5 minutes if not set
+    const intervalMs = (syncConfig.interval_secs || 300) * 1000;
+    
+    console.log(`[Sync] Starting auto-sync every ${intervalMs / 1000}s`);
+    
+    syncIntervalId = setInterval(() => {
+      console.log('[Sync] Auto-sync triggered');
+      get().sync().catch(console.error);
+    }, intervalMs);
+  },
+  
+  stopAutoSync: () => {
+    if (syncIntervalId) {
+      console.log('[Sync] Stopping auto-sync');
+      clearInterval(syncIntervalId);
+      syncIntervalId = null;
     }
   },
   
