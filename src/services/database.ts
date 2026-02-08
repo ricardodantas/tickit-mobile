@@ -53,6 +53,36 @@ async function runMigrations(database: any): Promise<void> {
     console.log('[DB] Adding completed_at column to tasks table');
     await database.execAsync("ALTER TABLE tasks ADD COLUMN completed_at TEXT");
   }
+  
+  // Fix duplicate inboxes - keep only the oldest one
+  await fixDuplicateInboxes(database);
+}
+
+// Fix duplicate inboxes by keeping only the oldest one
+async function fixDuplicateInboxes(database: any): Promise<void> {
+  const inboxes = await database.getAllAsync<{ id: string; created_at: string }>(
+    "SELECT id, created_at FROM lists WHERE is_inbox = 1 ORDER BY created_at ASC"
+  );
+  
+  if (inboxes.length <= 1) return;
+  
+  console.log(`[DB] Found ${inboxes.length} inboxes, merging...`);
+  
+  // Keep the first (oldest) inbox
+  const keepId = inboxes[0].id;
+  const deleteIds = inboxes.slice(1).map((i: any) => i.id);
+  
+  // Move tasks from duplicate inboxes to the kept inbox
+  for (const deleteId of deleteIds) {
+    await database.runAsync(
+      "UPDATE tasks SET list_id = ? WHERE list_id = ?",
+      [keepId, deleteId]
+    );
+    // Delete the duplicate inbox
+    await database.runAsync("DELETE FROM lists WHERE id = ?", [deleteId]);
+  }
+  
+  console.log(`[DB] Merged ${deleteIds.length} duplicate inbox(es) into ${keepId}`);
 }
 
 export async function initDatabase(): Promise<void> {
@@ -781,6 +811,22 @@ export async function upsertTask(task: Task): Promise<void> {
 
 export async function upsertList(list: List): Promise<void> {
   if (isWeb) {
+    // If incoming list is an inbox, merge with local inbox instead of creating duplicate
+    if (list.is_inbox) {
+      const localInbox = memoryStore.lists.find(l => l.is_inbox);
+      if (localInbox && localInbox.id !== list.id) {
+        // Merge: keep local inbox ID, update other fields if incoming is newer
+        if (list.updated_at > localInbox.updated_at) {
+          localInbox.name = list.name;
+          localInbox.description = list.description;
+          localInbox.icon = list.icon;
+          localInbox.color = list.color;
+          localInbox.updated_at = list.updated_at;
+        }
+        return;
+      }
+    }
+    
     const idx = memoryStore.lists.findIndex(l => l.id === list.id);
     if (idx !== -1) {
       memoryStore.lists[idx] = list;
@@ -792,6 +838,25 @@ export async function upsertList(list: List): Promise<void> {
   
   const database = await getDb();
   if (!database) return;
+  
+  // If incoming list is an inbox, check for existing local inbox
+  if (list.is_inbox) {
+    const localInbox = await database.getFirstAsync<{ id: string; updated_at: string }>(
+      "SELECT id, updated_at FROM lists WHERE is_inbox = 1"
+    );
+    
+    if (localInbox && localInbox.id !== list.id) {
+      // Merge with local inbox instead of creating duplicate
+      console.log('[DB] Merging remote inbox with local inbox');
+      if (list.updated_at > localInbox.updated_at) {
+        await database.runAsync(
+          `UPDATE lists SET name = ?, description = ?, icon = ?, color = ?, updated_at = ? WHERE id = ?`,
+          [list.name, list.description, list.icon, list.color, list.updated_at, localInbox.id]
+        );
+      }
+      return;
+    }
+  }
   
   await database.runAsync(
     `INSERT OR REPLACE INTO lists (id, name, description, icon, color, is_inbox, sort_order, created_at, updated_at)
