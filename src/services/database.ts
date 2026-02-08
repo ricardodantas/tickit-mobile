@@ -732,8 +732,37 @@ export async function getTasksSince(since: string): Promise<Task[]> {
   const database = await getDb();
   if (!database) return [];
   
-  const rows = await database.getAllAsync<Task>('SELECT * FROM tasks WHERE updated_at > ?', [since]);
-  return rows.map(row => ({ ...row, completed: Boolean(row.completed) }));
+  const rows = await database.getAllAsync<any>('SELECT * FROM tasks WHERE updated_at > ?', [since]);
+  const tasks: Task[] = [];
+  
+  for (const row of rows) {
+    // Parse tag_ids from JSON string or load from task_tags table
+    let tagIds: string[] = [];
+    if (row.tag_ids && typeof row.tag_ids === 'string') {
+      try {
+        tagIds = JSON.parse(row.tag_ids);
+      } catch {
+        tagIds = [];
+      }
+    }
+    
+    // Also check task_tags table for tag associations
+    const tagRows = await database.getAllAsync<{ tag_id: string }>(
+      'SELECT tag_id FROM task_tags WHERE task_id = ?',
+      [row.id]
+    );
+    if (tagRows.length > 0) {
+      tagIds = tagRows.map(r => r.tag_id);
+    }
+    
+    tasks.push({
+      ...row,
+      completed: Boolean(row.completed),
+      tag_ids: tagIds,
+    });
+  }
+  
+  return tasks;
 }
 
 export async function getListsSince(since: string): Promise<List[]> {
