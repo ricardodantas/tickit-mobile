@@ -60,6 +60,8 @@ export async function sync(): Promise<{ applied: number; conflicts: string[] }> 
   const device = await getDeviceId();
   const lastSync = await db.getLastSync();
   
+  console.log('[Sync] Starting sync, lastSync:', lastSync);
+  
   // Gather local changes
   const changes = await gatherLocalChanges(lastSync);
   
@@ -68,6 +70,8 @@ export async function sync(): Promise<{ applied: number; conflicts: string[] }> 
     last_sync: lastSync,
     changes,
   };
+  
+  console.log('[Sync] Sending', changes.length, 'local changes');
   
   // Send to server
   const response = await fetch(`${config.server}/api/v1/sync`, {
@@ -86,8 +90,12 @@ export async function sync(): Promise<{ applied: number; conflicts: string[] }> 
   
   const syncResponse: SyncResponse = await response.json();
   
+  console.log('[Sync] Received', syncResponse.changes.length, 'changes from server');
+  
   // Apply incoming changes
   const applied = await applyIncomingChanges(syncResponse);
+  
+  console.log('[Sync] Applied', applied, 'changes');
   
   // Update last sync time
   await db.setLastSync(syncResponse.server_time);

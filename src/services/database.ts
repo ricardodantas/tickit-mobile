@@ -721,19 +721,22 @@ export async function upsertTask(task: Task): Promise<void> {
   
   const existing = await database.getFirstAsync<{ updated_at: string }>('SELECT updated_at FROM tasks WHERE id = ?', [task.id]);
   
+  // Serialize tag_ids to JSON string
+  const tagIdsJson = JSON.stringify(task.tag_ids || []);
+  
   if (existing) {
     if (task.updated_at > existing.updated_at) {
       await database.runAsync(
-        `UPDATE tasks SET title = ?, description = ?, url = ?, priority = ?, completed = ?, list_id = ?, due_date = ?, updated_at = ?
+        `UPDATE tasks SET title = ?, description = ?, url = ?, priority = ?, completed = ?, list_id = ?, tag_ids = ?, due_date = ?, completed_at = ?, updated_at = ?
          WHERE id = ?`,
-        [task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, task.due_date, task.updated_at, task.id]
+        [task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, tagIdsJson, task.due_date, task.completed_at, task.updated_at, task.id]
       );
     }
   } else {
     await database.runAsync(
-      `INSERT INTO tasks (id, title, description, url, priority, completed, list_id, due_date, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [task.id, task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, task.due_date, task.created_at, task.updated_at]
+      `INSERT INTO tasks (id, title, description, url, priority, completed, list_id, tag_ids, due_date, completed_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [task.id, task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, tagIdsJson, task.due_date, task.completed_at, task.created_at, task.updated_at]
     );
   }
 }
