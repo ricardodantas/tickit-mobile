@@ -1,7 +1,6 @@
 // Tab layout with bottom navigation
 
 import { Tabs } from 'expo-router';
-import { StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeContext';
 
@@ -16,7 +15,6 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
-          borderTopWidth: 1,
         },
         headerShown: false,
       }}
@@ -25,9 +23,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Tasks',
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }) => (
             <Feather 
-              name={focused ? 'check-circle' : 'circle'} 
+              name="check-circle"
               size={24} 
               color={color} 
             />
