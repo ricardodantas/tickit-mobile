@@ -45,8 +45,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Inbox',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name={focused ? 'check-circle' : 'inbox'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <TabIcon name="inbox" color={color} />
           ),
         }}
       />
