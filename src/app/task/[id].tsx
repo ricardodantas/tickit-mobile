@@ -1,4 +1,4 @@
-// Task detail/edit screen
+// Task form screen - handles both new and edit
 
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
@@ -13,18 +13,22 @@ import { Priority } from '../../types';
 
 const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export default function TaskDetailScreen() {
+export default function TaskFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const isEditing = id && id !== 'new';
+  
   const router = useRouter();
   const { colors } = useTheme();
   const tasks = useStore(state => state.tasks);
   const lists = useStore(state => state.lists);
   const tags = useStore(state => state.tags);
+  const selectedListId = useStore(state => state.selectedListId);
+  const addTask = useStore(state => state.addTask);
   const updateTask = useStore(state => state.updateTask);
   const deleteTask = useStore(state => state.deleteTask);
   const toggleTask = useStore(state => state.toggleTask);
 
-  const task = tasks.find(t => t.id === id);
+  const task = isEditing ? tasks.find(t => t.id === id) : null;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -33,6 +37,21 @@ export default function TaskDetailScreen() {
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
+  // Initialize form for editing
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description || '');
+      setPriority(task.priority);
+      setListId(task.list_id);
+      setDueDate(task.due_date ? new Date(task.due_date) : null);
+      setSelectedTagIds(task.tag_ids || []);
+    } else {
+      // New task defaults
+      setListId(selectedListId || lists.find(l => l.is_inbox)?.id || '');
+    }
+  }, [task, selectedListId, lists]);
 
   const getPriorityColor = (p: Priority): string => {
     switch (p) {
@@ -43,21 +62,10 @@ export default function TaskDetailScreen() {
     }
   };
 
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setDescription(task.description || '');
-      setPriority(task.priority);
-      setListId(task.list_id);
-      setDueDate(task.due_date ? new Date(task.due_date) : null);
-      setSelectedTagIds(task.tag_ids || []);
-    }
-  }, [task]);
-
   const toggleTag = (tagId: string) => {
     setSelectedTagIds(prev => 
       prev.includes(tagId) 
-        ? prev.filter(id => id !== tagId)
+        ? prev.filter(tid => tid !== tagId)
         : [...prev, tagId]
     );
   };
@@ -80,31 +88,37 @@ export default function TaskDetailScreen() {
     });
   };
 
-  if (!task) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-        <Text style={[styles.notFound, { color: colors.comment }]}>Task not found</Text>
-      </SafeAreaView>
-    );
-  }
-
   const handleSave = async () => {
     if (!title.trim()) return;
 
-    await updateTask({
-      ...task,
+    const taskData = {
       title: title.trim(),
       description: description.trim() || null,
       priority,
       list_id: listId,
       due_date: dueDate ? dueDate.toISOString().split('T')[0] : null,
       tag_ids: selectedTagIds,
-    });
+    };
+
+    if (isEditing && task) {
+      await updateTask({
+        ...task,
+        ...taskData,
+      });
+    } else {
+      await addTask({
+        ...taskData,
+        url: null,
+        completed: false,
+      });
+    }
 
     router.back();
   };
 
   const handleDelete = () => {
+    if (!task) return;
+    
     Alert.alert(
       'Delete Task',
       'Are you sure you want to delete this task?',
@@ -123,18 +137,35 @@ export default function TaskDetailScreen() {
   };
 
   const handleToggle = async () => {
+    if (!task) return;
     await toggleTask(task.id);
   };
+
+  // Not found state for editing
+  if (isEditing && !task) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Feather name="x" size={24} color={colors.foreground} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.notFound, { color: colors.comment }]}>Task not found</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color={colors.foreground} />
+          <Feather name={isEditing ? 'arrow-left' : 'x'} size={24} color={colors.foreground} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Edit Task</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+            {isEditing ? 'Edit Task' : 'New Task'}
+          </Text>
         </View>
         <TouchableOpacity 
           onPress={handleSave} 
@@ -147,24 +178,26 @@ export default function TaskDetailScreen() {
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          {/* Completed toggle */}
-          <TouchableOpacity 
-            style={[
-              styles.completeButton, 
-              { backgroundColor: colors.backgroundSecondary, borderColor: colors.backgroundTertiary },
-              task.completed && { borderColor: colors.green, backgroundColor: colors.backgroundTertiary }
-            ]}
-            onPress={handleToggle}
-          >
-            <Feather 
-              name={task.completed ? 'check-circle' : 'circle'} 
-              size={20} 
-              color={task.completed ? colors.green : colors.comment} 
-            />
-            <Text style={[styles.completeButtonText, { color: colors.foreground }, task.completed && { color: colors.green }]}>
-              {task.completed ? 'Completed' : 'Mark Complete'}
-            </Text>
-          </TouchableOpacity>
+          {/* Completed toggle (edit mode only) */}
+          {isEditing && task && (
+            <TouchableOpacity 
+              style={[
+                styles.completeButton, 
+                { backgroundColor: colors.backgroundSecondary, borderColor: colors.backgroundTertiary },
+                task.completed && { borderColor: colors.green, backgroundColor: colors.backgroundTertiary }
+              ]}
+              onPress={handleToggle}
+            >
+              <Feather 
+                name={task.completed ? 'check-circle' : 'circle'} 
+                size={20} 
+                color={task.completed ? colors.green : colors.comment} 
+              />
+              <Text style={[styles.completeButtonText, { color: colors.foreground }, task.completed && { color: colors.green }]}>
+                {task.completed ? 'Completed' : 'Mark Complete'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* Title */}
           <View style={styles.field}>
@@ -176,6 +209,7 @@ export default function TaskDetailScreen() {
                 onChangeText={setTitle}
                 placeholder="What needs to be done?"
                 placeholderTextColor={colors.comment}
+                autoFocus={!isEditing}
               />
             </View>
           </View>
@@ -220,6 +254,7 @@ export default function TaskDetailScreen() {
                   mode="date"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onChange={handleDateChange}
+                  minimumDate={isEditing ? undefined : new Date()}
                   themeVariant="dark"
                 />
                 {Platform.OS === 'ios' && (
@@ -333,15 +368,19 @@ export default function TaskDetailScreen() {
             onPress={handleSave}
             disabled={!title.trim()}
           >
-            <Feather name="save" size={18} color="#fff" />
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Feather name={isEditing ? 'save' : 'plus'} size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>
+              {isEditing ? 'Save Changes' : 'Create Task'}
+            </Text>
           </TouchableOpacity>
 
-          {/* Delete Button */}
-          <TouchableOpacity style={[styles.deleteButton, { borderColor: colors.red }]} onPress={handleDelete}>
-            <Feather name="trash-2" size={18} color={colors.red} />
-            <Text style={[styles.deleteButtonText, { color: colors.red }]}>Delete Task</Text>
-          </TouchableOpacity>
+          {/* Delete Button (edit mode only) */}
+          {isEditing && (
+            <TouchableOpacity style={[styles.deleteButton, { borderColor: colors.red }]} onPress={handleDelete}>
+              <Feather name="trash-2" size={18} color={colors.red} />
+              <Text style={[styles.deleteButtonText, { color: colors.red }]}>Delete Task</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
