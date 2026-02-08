@@ -1,6 +1,7 @@
 // Tags screen
 
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
 import { colors, spacing, borderRadius, fontSize } from '../../theme';
 import { Tag } from '../../types';
@@ -8,7 +9,6 @@ import { Tag } from '../../types';
 export default function TagsScreen() {
   const tags = useStore(state => state.tags);
   const deleteTag = useStore(state => state.deleteTag);
-  const tasks = useStore(state => state.tasks);
 
   const handleDelete = (tag: Tag) => {
     Alert.alert(
@@ -27,6 +27,16 @@ export default function TagsScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Tags</Text>
+          <Text style={styles.subtitle}>
+            {tags.length} {tags.length === 1 ? 'tag' : 'tags'}
+          </Text>
+        </View>
+      </View>
+
       <FlatList
         data={tags}
         keyExtractor={(item) => item.id}
@@ -46,7 +56,9 @@ export default function TagsScreen() {
         numColumns={2}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🏷️</Text>
+            <View style={styles.emptyIconContainer}>
+              <Feather name="tag" size={32} color={colors.comment} />
+            </View>
             <Text style={styles.emptyText}>No tags yet</Text>
             <Text style={styles.emptySubtext}>Create tags to organize your tasks</Text>
           </View>
@@ -55,7 +67,8 @@ export default function TagsScreen() {
 
       {/* Add tag button */}
       <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>+ New Tag</Text>
+        <Feather name="plus" size={20} color={colors.purple} />
+        <Text style={styles.addButtonText}>New Tag</Text>
       </TouchableOpacity>
     </View>
   );
@@ -65,6 +78,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: 16,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.backgroundTertiary,
+  },
+  headerContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  subtitle: {
+    fontSize: fontSize.sm,
+    color: colors.comment,
+    marginTop: 2,
   },
   list: {
     padding: spacing.md,
@@ -77,7 +110,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     margin: spacing.xs,
-    gap: spacing.sm,
   },
   tagItemPressed: {
     opacity: 0.7,
@@ -85,7 +117,8 @@ const styles = StyleSheet.create({
   tagColor: {
     width: 16,
     height: 16,
-    borderRadius: borderRadius.sm,
+    borderRadius: 4,
+    marginRight: spacing.sm,
   },
   tagName: {
     fontSize: fontSize.md,
@@ -98,9 +131,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 100,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: spacing.md,
+  emptyIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.backgroundSecondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   emptyText: {
     fontSize: fontSize.lg,
@@ -108,20 +146,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   emptySubtext: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.sm,
     color: colors.comment,
     marginTop: spacing.xs,
   },
   addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     margin: spacing.md,
     padding: spacing.md,
-    backgroundColor: colors.backgroundTertiary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: borderRadius.lg,
-    alignItems: 'center',
   },
   addButtonText: {
     fontSize: fontSize.md,
     color: colors.purple,
     fontWeight: '600',
+    marginLeft: spacing.sm,
   },
 });

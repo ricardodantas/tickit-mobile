@@ -2,6 +2,7 @@
 
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { themeList, getColors } from '../theme';
 import { spacing, borderRadius, fontSize } from '../theme';
@@ -16,56 +17,66 @@ export default function ThemesScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.foreground }]}>Choose Theme</Text>
-      <Text style={[styles.subtitle, { color: colors.comment }]}>
-        15 beautiful themes to personalize your experience
-      </Text>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color={colors.foreground} />
+        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <Text style={[styles.title, { color: colors.foreground }]}>Themes</Text>
+          <Text style={[styles.subtitle, { color: colors.comment }]}>
+            15 beautiful themes
+          </Text>
+        </View>
+      </View>
 
-      <View style={styles.grid}>
-        {themeList.map((theme) => {
-          const themeColors = getColors(theme.palette);
-          const isSelected = theme.name === currentTheme.name;
+      <View style={styles.content}>
+        <View style={styles.grid}>
+          {themeList.map((theme) => {
+            const themeColors = getColors(theme.palette);
+            const isSelected = theme.name === currentTheme.name;
 
-          return (
-            <TouchableOpacity
-              key={theme.name}
-              style={[
-                styles.themeCard,
-                { backgroundColor: theme.palette.background },
-                isSelected && { borderColor: colors.purple, borderWidth: 3 },
-              ]}
-              onPress={() => handleSelectTheme(theme.name)}
-              activeOpacity={0.7}
-            >
-              {/* Color preview */}
-              <View style={styles.colorRow}>
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.red }]} />
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.orange }]} />
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.yellow }]} />
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.green }]} />
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.cyan }]} />
-                <View style={[styles.colorDot, { backgroundColor: theme.palette.purple }]} />
-              </View>
-
-              {/* Theme name */}
-              <Text style={[styles.themeName, { color: theme.palette.foreground }]}>
-                {theme.displayName}
-              </Text>
-
-              {/* Sample text */}
-              <Text style={[styles.sampleText, { color: theme.palette.comment }]}>
-                Sample text
-              </Text>
-
-              {/* Selected indicator */}
-              {isSelected && (
-                <View style={[styles.selectedBadge, { backgroundColor: colors.purple }]}>
-                  <Text style={styles.selectedText}>✓</Text>
+            return (
+              <TouchableOpacity
+                key={theme.name}
+                style={[
+                  styles.themeCard,
+                  { backgroundColor: theme.palette.background },
+                  isSelected && { borderColor: colors.purple, borderWidth: 3 },
+                ]}
+                onPress={() => handleSelectTheme(theme.name)}
+                activeOpacity={0.7}
+              >
+                {/* Color preview */}
+                <View style={styles.colorRow}>
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.red }]} />
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.orange }]} />
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.yellow }]} />
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.green }]} />
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.cyan }]} />
+                  <View style={[styles.colorDot, { backgroundColor: theme.palette.purple }]} />
                 </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+
+                {/* Theme name */}
+                <Text style={[styles.themeName, { color: theme.palette.foreground }]}>
+                  {theme.displayName}
+                </Text>
+
+                {/* Sample text */}
+                <Text style={[styles.sampleText, { color: theme.palette.comment }]}>
+                  Sample text
+                </Text>
+
+                {/* Selected indicator */}
+                {isSelected && (
+                  <View style={[styles.selectedBadge, { backgroundColor: colors.purple }]}>
+                    <Feather name="check" size={14} color="#fff" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       <View style={{ height: spacing.xl }} />
@@ -76,39 +87,56 @@ export default function ThemesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: 16,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: spacing.sm,
+    marginRight: spacing.sm,
+  },
+  headerContent: {
+    flex: 1,
   },
   title: {
-    fontSize: fontSize.xl,
+    fontSize: 28,
     fontWeight: '700',
-    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: fontSize.md,
-    marginBottom: spacing.lg,
+    fontSize: fontSize.sm,
+    marginTop: 2,
+  },
+  content: {
+    padding: spacing.md,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
+    justifyContent: 'space-between',
   },
   themeCard: {
-    width: '47%',
+    width: '48%',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     position: 'relative',
+    marginBottom: spacing.md,
   },
   colorRow: {
     flexDirection: 'row',
-    gap: 4,
     marginBottom: spacing.sm,
   },
   colorDot: {
     width: 16,
     height: 16,
     borderRadius: 8,
+    marginRight: 4,
   },
   themeName: {
     fontSize: fontSize.md,
@@ -127,10 +155,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  selectedText: {
-    color: '#fff',
-    fontSize: fontSize.sm,
-    fontWeight: '700',
   },
 });
