@@ -57,8 +57,8 @@ export default function ListsScreen() {
     await addList({
       name: newListName.trim(),
       description: newListDescription.trim() || null,
-      emoji: '📁',
-      parent_id: null,
+      icon: '📁',
+      color: null,
       sort_order: lists.length,
     });
     
