@@ -1,12 +1,11 @@
 // List detail screen - shows tasks for a specific list
 
-import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
+import { ScreenWrapper } from '../../components';
 import { spacing, borderRadius, fontSize } from '../../theme';
 import { Task, Priority } from '../../types';
 
@@ -19,8 +18,8 @@ export default function ListDetailScreen() {
   const tasks = useStore(state => state.tasks);
   const allTags = useStore(state => state.tags);
   const toggleTask = useStore(state => state.toggleTask);
-
-  const [showCompleted, setShowCompleted] = useState(false);
+  const showCompleted = useStore(state => state.showCompleted);
+  const toggleShowCompleted = useStore(state => state.toggleShowCompleted);
 
   const list = lists.find(l => l.id === id);
   const listTasks = tasks.filter(t => t.list_id === id);
@@ -108,42 +107,39 @@ export default function ListDetailScreen() {
 
   if (!list) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-        <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-        </View>
+      <ScreenWrapper
+        header={{
+          title: 'Not Found',
+          showBack: true,
+        }}
+      >
         <Text style={[styles.notFound, { color: colors.comment }]}>List not found</Text>
-      </SafeAreaView>
+      </ScreenWrapper>
     );
   }
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.backgroundTertiary }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color={colors.foreground} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{list.name}</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.comment }]}>
-            {incompleteTasks.length} remaining{completedTasks.length > 0 ? ` · ${completedTasks.length} done` : ''}
-          </Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.headerButton} 
-          onPress={() => setShowCompleted(!showCompleted)}
-        >
-          <Feather 
-            name={showCompleted ? 'eye' : 'eye-off'} 
-            size={20} 
-            color={showCompleted ? colors.purple : colors.comment} 
-          />
-        </TouchableOpacity>
-      </View>
+  const headerRight = (
+    <TouchableOpacity 
+      style={styles.headerButton} 
+      onPress={toggleShowCompleted}
+    >
+      <Feather 
+        name={showCompleted ? 'eye' : 'eye-off'} 
+        size={20} 
+        color={showCompleted ? colors.purple : colors.comment} 
+      />
+    </TouchableOpacity>
+  );
 
+  return (
+    <ScreenWrapper
+      header={{
+        title: list.name,
+        subtitle: `${incompleteTasks.length} remaining${completedTasks.length > 0 ? ` · ${completedTasks.length} done` : ''}`,
+        showBack: true,
+        rightContent: headerRight,
+      }}
+    >
       {/* Task list */}
       <FlatList
         data={displayedTasks}
@@ -168,7 +164,7 @@ export default function ListDetailScreen() {
       >
         <Feather name="plus" size={28} color="#fff" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 
@@ -193,32 +189,6 @@ function formatDate(date: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: spacing.sm,
-    marginRight: spacing.sm,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  headerSubtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
-  },
   headerButton: {
     padding: spacing.sm,
   },
