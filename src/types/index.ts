@@ -13,6 +13,7 @@ export interface Task {
   due_date: string | null;
   created_at: string;
   updated_at: string;
+  tag_ids?: string[]; // Optional: populated when loading tasks with tags
 }
 
 export interface List {

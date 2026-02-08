@@ -286,7 +286,18 @@ export async function getAllTasks(): Promise<Task[]> {
   if (!database) return [];
   
   const rows = await database.getAllAsync<Task>('SELECT * FROM tasks');
-  return rows.map(row => ({ ...row, completed: Boolean(row.completed) }));
+  const tasks = rows.map(row => ({ ...row, completed: Boolean(row.completed), tag_ids: [] as string[] }));
+  
+  // Load tag_ids for each task
+  for (const task of tasks) {
+    const tagRows = await database.getAllAsync<{ tag_id: string }>(
+      'SELECT tag_id FROM task_tags WHERE task_id = ?',
+      [task.id]
+    );
+    task.tag_ids = tagRows.map(r => r.tag_id);
+  }
+  
+  return tasks;
 }
 
 export async function getTask(id: string): Promise<Task | null> {
@@ -299,7 +310,17 @@ export async function getTask(id: string): Promise<Task | null> {
   
   const row = await database.getFirstAsync<Task>('SELECT * FROM tasks WHERE id = ?', [id]);
   if (!row) return null;
-  return { ...row, completed: Boolean(row.completed) };
+  
+  const task = { ...row, completed: Boolean(row.completed), tag_ids: [] as string[] };
+  
+  // Load tag_ids
+  const tagRows = await database.getAllAsync<{ tag_id: string }>(
+    'SELECT tag_id FROM task_tags WHERE task_id = ?',
+    [id]
+  );
+  task.tag_ids = tagRows.map(r => r.tag_id);
+  
+  return task;
 }
 
 export async function createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at'>): Promise<Task> {
@@ -320,6 +341,11 @@ export async function createTask(task: Omit<Task, 'id' | 'created_at' | 'updated
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [id, task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, task.due_date, now, now]
   );
+  
+  // Save tag associations
+  if (task.tag_ids && task.tag_ids.length > 0) {
+    await setTaskTags(id, task.tag_ids);
+  }
   
   return newTask;
 }
@@ -343,6 +369,11 @@ export async function updateTask(task: Task): Promise<void> {
      WHERE id = ?`,
     [task.title, task.description, task.url, task.priority, task.completed ? 1 : 0, task.list_id, task.due_date, now, task.id]
   );
+  
+  // Update tag associations
+  if (task.tag_ids !== undefined) {
+    await setTaskTags(task.id, task.tag_ids);
+  }
 }
 
 export async function deleteTask(id: string): Promise<void> {
