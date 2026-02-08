@@ -1,5 +1,6 @@
 // Tasks screen - main task list
 
+import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -18,7 +19,11 @@ export default function TasksScreen() {
   const syncStatus = useStore(state => state.syncStatus);
   const sync = useStore(state => state.sync);
 
+  const [showCompleted, setShowCompleted] = useState(false);
+
   const incompleteTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
+  const displayedTasks = showCompleted ? tasks : incompleteTasks;
 
   const handleToggle = async (id: string) => {
     await toggleTask(id);
@@ -107,9 +112,31 @@ export default function TasksScreen() {
         rightContent: headerRight,
       }}
     >
+      {/* Show completed toggle */}
+      {completedTasks.length > 0 && (
+        <TouchableOpacity 
+          style={[styles.toggleBar, { backgroundColor: colors.backgroundSecondary }]}
+          onPress={() => setShowCompleted(!showCompleted)}
+        >
+          <Feather 
+            name={showCompleted ? 'eye' : 'eye-off'} 
+            size={16} 
+            color={colors.comment} 
+          />
+          <Text style={[styles.toggleText, { color: colors.comment }]}>
+            {showCompleted ? 'Showing' : 'Hiding'} {completedTasks.length} completed
+          </Text>
+          <Feather 
+            name={showCompleted ? 'chevron-up' : 'chevron-down'} 
+            size={16} 
+            color={colors.comment} 
+          />
+        </TouchableOpacity>
+      )}
+
       {/* Task list */}
       <FlatList
-        data={tasks}
+        data={displayedTasks}
         keyExtractor={(item) => item.id}
         renderItem={renderTaskItem}
         contentContainerStyle={styles.list}
@@ -162,6 +189,19 @@ const styles = StyleSheet.create({
   },
   syncIcon: {
     marginRight: spacing.sm,
+  },
+  toggleBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+  },
+  toggleText: {
+    fontSize: fontSize.sm,
+    marginHorizontal: spacing.sm,
   },
   list: {
     padding: spacing.md,
