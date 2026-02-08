@@ -295,10 +295,10 @@ export const useStore = create<AppState>((set, get) => ({
 
 // Selectors
 export const useFilteredTasks = () => {
-  const { tasks, selectedListId, showCompleted } = useStore();
+  const { tasks, showCompleted } = useStore();
   
   return tasks.filter(task => {
-    if (selectedListId && task.list_id !== selectedListId) return false;
+    // Always show all tasks from all lists (inbox behavior)
     if (!showCompleted && task.completed) return false;
     return true;
   });

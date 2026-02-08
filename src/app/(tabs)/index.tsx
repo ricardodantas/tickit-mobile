@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { useStore, useFilteredTasks, useSelectedList } from '../../store';
+import { useStore, useFilteredTasks } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
 import { ScreenWrapper } from '../../components';
 import { spacing, borderRadius, fontSize } from '../../theme';
@@ -14,7 +14,6 @@ export default function TasksScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const tasks = useFilteredTasks();
-  const selectedList = useSelectedList();
   const toggleTask = useStore(state => state.toggleTask);
   const syncStatus = useStore(state => state.syncStatus);
   const sync = useStore(state => state.sync);
@@ -118,7 +117,7 @@ export default function TasksScreen() {
   return (
     <ScreenWrapper
       header={{
-        title: selectedList?.name ?? 'All Tasks',
+        title: 'Inbox',
         subtitle: `${incompleteTasks.length} remaining${completedTasks.length > 0 ? ` · ${completedTasks.length} done` : ''}`,
         rightContent: headerRight,
       }}
