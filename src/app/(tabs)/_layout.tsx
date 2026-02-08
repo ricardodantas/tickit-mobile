@@ -1,5 +1,6 @@
 // Tab layout with bottom navigation
 
+import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeContext';
@@ -15,11 +16,31 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.backgroundSecondary,
           borderTopColor: colors.backgroundTertiary,
+          borderTopWidth: 0.5,
+          height: Platform.OS === 'ios' ? 85 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          paddingTop: 8,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+        },
+        tabBarIconStyle: {
+          marginBottom: -2,
         },
         headerStyle: {
           backgroundColor: colors.backgroundSecondary,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0.5,
+          borderBottomColor: colors.backgroundTertiary,
         },
         headerTintColor: colors.foreground,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
       }}
     >
       <Tabs.Screen
@@ -27,8 +48,12 @@ export default function TabLayout() {
         options={{
           title: 'Tasks',
           headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Feather name="check-circle" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Feather 
+              name={focused ? 'check-circle' : 'circle'} 
+              size={24} 
+              color={color} 
+            />
           ),
         }}
       />
@@ -37,7 +62,7 @@ export default function TabLayout() {
         options={{
           title: 'Lists',
           tabBarIcon: ({ color }) => (
-            <Feather name="inbox" size={22} color={color} />
+            <Feather name="list" size={24} color={color} />
           ),
         }}
       />
@@ -46,7 +71,7 @@ export default function TabLayout() {
         options={{
           title: 'Tags',
           tabBarIcon: ({ color }) => (
-            <Feather name="tag" size={22} color={color} />
+            <Feather name="tag" size={24} color={color} />
           ),
         }}
       />
