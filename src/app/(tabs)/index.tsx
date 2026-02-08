@@ -1,6 +1,5 @@
 // Tasks screen - main task list
 
-import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -14,17 +13,17 @@ export default function TasksScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const tasks = useFilteredTasks();
+  const allTasks = useStore(state => state.tasks);
   const lists = useStore(state => state.lists);
   const allTags = useStore(state => state.tags);
   const toggleTask = useStore(state => state.toggleTask);
+  const showCompleted = useStore(state => state.showCompleted);
+  const toggleShowCompleted = useStore(state => state.toggleShowCompleted);
   const syncStatus = useStore(state => state.syncStatus);
   const sync = useStore(state => state.sync);
 
-  const [showCompleted, setShowCompleted] = useState(false);
-
-  const incompleteTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
-  const displayedTasks = showCompleted ? tasks : incompleteTasks;
+  const incompleteTasks = allTasks.filter(t => !t.completed);
+  const completedTasks = allTasks.filter(t => t.completed);
 
   const handleToggle = async (id: string) => {
     await toggleTask(id);
@@ -118,7 +117,7 @@ export default function TasksScreen() {
       {/* Show/hide completed toggle */}
       <TouchableOpacity 
         style={styles.headerButton} 
-        onPress={() => setShowCompleted(!showCompleted)}
+        onPress={toggleShowCompleted}
       >
         <Feather 
           name={showCompleted ? 'eye' : 'eye-off'} 
@@ -150,7 +149,7 @@ export default function TasksScreen() {
     >
       {/* Task list */}
       <FlatList
-        data={displayedTasks}
+        data={tasks}
         keyExtractor={(item) => item.id}
         renderItem={renderTaskItem}
         contentContainerStyle={styles.list}
