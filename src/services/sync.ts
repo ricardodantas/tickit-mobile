@@ -50,6 +50,12 @@ export function isSyncEnabled(config: SyncConfig): boolean {
   return config.enabled && !!config.server && !!config.token;
 }
 
+export async function forceFullSync(): Promise<{ applied: number; conflicts: string[] }> {
+  console.log('[Sync] Force full sync - clearing lastSync');
+  await db.clearLastSync();
+  return sync();
+}
+
 export async function sync(): Promise<{ applied: number; conflicts: string[] }> {
   const config = await getSyncConfig();
   
@@ -156,18 +162,23 @@ async function gatherLocalChanges(lastSync: string | null): Promise<SyncRecord[]
 async function applyIncomingChanges(response: SyncResponse): Promise<number> {
   let applied = 0;
   
+  console.log('[Sync] Applying changes, total:', response.changes.length);
+  
   for (const record of response.changes) {
     try {
+      console.log('[Sync] Processing record type:', record.type, 'id:', (record as any).id);
       switch (record.type) {
         case 'task':
           await db.upsertTask(record as any);
           applied++;
           break;
         case 'list':
+          console.log('[Sync] Upserting list:', (record as any).name);
           await db.upsertList(record as any);
           applied++;
           break;
         case 'tag':
+          console.log('[Sync] Upserting tag:', (record as any).name);
           await db.upsertTag(record as any);
           applied++;
           break;

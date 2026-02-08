@@ -656,6 +656,18 @@ export async function setLastSync(timestamp: string): Promise<void> {
   );
 }
 
+export async function clearLastSync(): Promise<void> {
+  if (isWeb) {
+    delete memoryStore.syncState['last_sync'];
+    return;
+  }
+  
+  const database = await getDb();
+  if (!database) return;
+  
+  await database.runAsync('DELETE FROM sync_state WHERE key = ?', ['last_sync']);
+}
+
 export async function getTasksSince(since: string): Promise<Task[]> {
   if (isWeb) {
     return memoryStore.tasks.filter(t => t.updated_at > since);

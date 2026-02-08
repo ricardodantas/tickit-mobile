@@ -16,6 +16,7 @@ export default function SettingsScreen() {
   const syncStatus = useStore(state => state.syncStatus);
   const saveSyncConfig = useStore(state => state.saveSyncConfig);
   const sync = useStore(state => state.sync);
+  const forceFullSync = useStore(state => state.forceFullSync);
   const notificationsEnabled = useStore(state => state.notificationsEnabled);
   const enableNotifications = useStore(state => state.enableNotifications);
 
@@ -170,6 +171,17 @@ export default function SettingsScreen() {
           <Feather name="refresh-cw" size={18} color={colors.foreground} />
           <Text style={[styles.syncButtonText, { color: colors.foreground }]}>
             {syncStatus.syncing ? 'Syncing...' : 'Test Sync Now'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.syncButton, { backgroundColor: colors.backgroundSecondary, marginTop: spacing.sm }, (!enabled || !server || !token) && styles.buttonDisabled]} 
+          onPress={forceFullSync}
+          disabled={!enabled || !server || !token || syncStatus.syncing}
+        >
+          <Feather name="download-cloud" size={18} color={colors.orange} />
+          <Text style={[styles.syncButtonText, { color: colors.orange }]}>
+            Force Full Sync
           </Text>
         </TouchableOpacity>
 

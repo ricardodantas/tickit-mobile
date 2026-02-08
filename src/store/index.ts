@@ -55,6 +55,7 @@ interface AppState {
   loadSyncConfig: () => Promise<void>;
   saveSyncConfig: (config: SyncConfig) => Promise<void>;
   sync: () => Promise<void>;
+  forceFullSync: () => Promise<void>;
   startAutoSync: () => void;
   stopAutoSync: () => void;
   
@@ -315,6 +316,37 @@ export const useStore = create<AppState>((set, get) => ({
       console.log('[Sync] Stopping auto-sync');
       clearInterval(syncIntervalId);
       syncIntervalId = null;
+    }
+  },
+  
+  forceFullSync: async () => {
+    const { syncConfig } = get();
+    if (!syncService.isSyncEnabled(syncConfig)) return;
+    
+    set(state => ({
+      syncStatus: { ...state.syncStatus, syncing: true, last_error: null },
+    }));
+    
+    try {
+      const result = await syncService.forceFullSync();
+      await get().refreshData();
+      
+      set(state => ({
+        syncStatus: {
+          ...state.syncStatus,
+          syncing: false,
+          last_sync: new Date().toISOString(),
+          last_error: null,
+        },
+      }));
+    } catch (e) {
+      set(state => ({
+        syncStatus: {
+          ...state.syncStatus,
+          syncing: false,
+          last_error: String(e),
+        },
+      }));
     }
   },
   
