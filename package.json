@@ -6,6 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
+    "device:ios":"eas build --platform ios --profile development",
+    "device:android": "eas build --platform android --profile development",
     "web": "expo start --web",
     "lint": "eslint .",
     "prebuild": "expo prebuild"
