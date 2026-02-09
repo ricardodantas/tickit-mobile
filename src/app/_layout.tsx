@@ -45,8 +45,8 @@ function RootLayoutContent() {
     );
   }
 
-  // Use ios_from_right for native iOS slide, slide_from_right for Android
-  const slideAnimation = Platform.OS === 'ios' ? 'ios_from_right' : 'slide_from_right';
+  // Use simple_push for clean native iOS transitions without corner artifacts
+  const slideAnimation = Platform.OS === 'ios' ? 'simple_push' : 'slide_from_right';
 
   return (
     <>
@@ -64,9 +64,6 @@ function RootLayoutContent() {
             backgroundColor: colors.background,
           },
           animation: slideAnimation,
-          // Ensure back gesture uses same native animation
-          customAnimationOnSwipe: true,
-          fullScreenGestureEnabled: true,
         }}
       >
         <Stack.Screen 
@@ -78,8 +75,6 @@ function RootLayoutContent() {
           options={{
             headerShown: false,
             animation: slideAnimation,
-            customAnimationOnSwipe: true,
-            fullScreenGestureEnabled: true,
           }}
         />
         <Stack.Screen
