@@ -54,6 +54,7 @@ interface AppState {
   // Sync actions
   loadSyncConfig: () => Promise<void>;
   saveSyncConfig: (config: SyncConfig) => Promise<void>;
+  syncAfterChange: () => void;
   sync: () => Promise<void>;
   forceFullSync: () => Promise<void>;
   startAutoSync: () => void;
@@ -151,6 +152,9 @@ export const useStore = create<AppState>((set, get) => ({
         await notifications.scheduleTaskReminderAdvance(newTask, 24);
       }
     }
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   updateTask: async (task) => {
@@ -168,12 +172,18 @@ export const useStore = create<AppState>((set, get) => ({
         await notifications.cancelTaskReminder(task.id);
       }
     }
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   deleteTask: async (id) => {
     await notifications.cancelTaskReminder(id);
     await db.deleteTask(id);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   toggleTask: async (id) => {
@@ -187,17 +197,26 @@ export const useStore = create<AppState>((set, get) => ({
     } else if (task?.due_date && get().notificationsEnabled) {
       await notifications.scheduleTaskReminder(task);
     }
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   // List actions
   addList: async (list) => {
     await db.createList(list);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   updateList: async (list) => {
     await db.updateList(list);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   deleteList: async (id) => {
@@ -208,6 +227,9 @@ export const useStore = create<AppState>((set, get) => ({
       set({ selectedListId: inbox?.id ?? null });
     }
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   selectList: (id) => {
@@ -218,16 +240,25 @@ export const useStore = create<AppState>((set, get) => ({
   addTag: async (tag) => {
     await db.createTag(tag);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   updateTag: async (tag) => {
     await db.updateTag(tag);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   deleteTag: async (id) => {
     await db.deleteTag(id);
     await get().refreshData();
+    
+    // Sync after change
+    get().syncAfterChange();
   },
   
   // UI actions
@@ -256,6 +287,23 @@ export const useStore = create<AppState>((set, get) => ({
       // Sync immediately when config is saved
       get().sync().catch(console.error);
     }
+  },
+  
+  // Helper to trigger sync after data changes (non-blocking)
+  syncAfterChange: async () => {
+    const { syncConfig, syncStatus } = get();
+    if (!syncService.isSyncEnabled(syncConfig)) return;
+    if (syncStatus.syncing) return; // Already syncing
+    
+    // Small delay to batch rapid changes
+    setTimeout(async () => {
+      try {
+        console.log('[Store] Auto-sync after change');
+        await get().sync();
+      } catch (e) {
+        console.log('[Store] Auto-sync failed:', e);
+      }
+    }, 500);
   },
   
   sync: async () => {
