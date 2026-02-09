@@ -45,6 +45,9 @@ function RootLayoutContent() {
     );
   }
 
+  // Use ios_from_right for native iOS slide, slide_from_right for Android
+  const slideAnimation = Platform.OS === 'ios' ? 'ios_from_right' : 'slide_from_right';
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -60,8 +63,7 @@ function RootLayoutContent() {
           contentStyle: {
             backgroundColor: colors.background,
           },
-          // Use simple fade to avoid corner artifacts on iOS
-          animation: 'fade',
+          animation: slideAnimation,
         }}
       >
         <Stack.Screen 
@@ -72,7 +74,7 @@ function RootLayoutContent() {
           name="list/[id]"
           options={{
             headerShown: false,
-            animation: 'fade',
+            animation: slideAnimation,
           }}
         />
         <Stack.Screen
