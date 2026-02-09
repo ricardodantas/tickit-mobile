@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet, AppState } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, AppState, Platform } from 'react-native';
 import { useStore } from '../store';
 import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 
@@ -60,7 +60,8 @@ function RootLayoutContent() {
           contentStyle: {
             backgroundColor: colors.background,
           },
-          animation: 'slide_from_right',
+          // Use iOS default animation to avoid corner artifacts
+          animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
         }}
       >
         <Stack.Screen 
@@ -71,7 +72,8 @@ function RootLayoutContent() {
           name="list/[id]"
           options={{
             headerShown: false,
-            animation: 'slide_from_right',
+            // iOS default push animation avoids rounded corner artifacts
+            animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
           }}
         />
         <Stack.Screen
