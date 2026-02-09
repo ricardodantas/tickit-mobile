@@ -60,8 +60,8 @@ function RootLayoutContent() {
           contentStyle: {
             backgroundColor: colors.background,
           },
-          // Use iOS default animation to avoid corner artifacts
-          animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
+          // Use simple fade to avoid corner artifacts on iOS
+          animation: 'fade',
         }}
       >
         <Stack.Screen 
@@ -72,8 +72,7 @@ function RootLayoutContent() {
           name="list/[id]"
           options={{
             headerShown: false,
-            // iOS default push animation avoids rounded corner artifacts
-            animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
+            animation: 'fade',
           }}
         />
         <Stack.Screen
