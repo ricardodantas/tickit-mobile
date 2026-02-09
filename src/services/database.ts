@@ -732,7 +732,14 @@ export async function getTasksSince(since: string): Promise<Task[]> {
   const database = await getDb();
   if (!database) return [];
   
+  // Debug: check all tasks and their updated_at
+  const allTasks = await database.getAllAsync<any>('SELECT id, title, updated_at FROM tasks ORDER BY updated_at DESC LIMIT 5');
+  console.log('[DB] Recent tasks updated_at:', allTasks.map(t => ({ title: t.title?.substring(0, 20), updated_at: t.updated_at })));
+  console.log('[DB] Looking for tasks with updated_at >', since);
+  
   const rows = await database.getAllAsync<any>('SELECT * FROM tasks WHERE updated_at > ?', [since]);
+  console.log('[DB] Found', rows.length, 'tasks with updated_at >', since);
+  
   const tasks: Task[] = [];
   
   for (const row of rows) {
