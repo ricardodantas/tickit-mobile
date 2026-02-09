@@ -66,7 +66,12 @@ export async function sync(): Promise<{ applied: number; conflicts: string[] }> 
   const device = await getDeviceId();
   const lastSync = await db.getLastSync();
   
-  console.log('[Sync] Starting sync, lastSync:', lastSync);
+  // Capture local time BEFORE gathering changes.
+  // This ensures any changes made during or after sync will be picked up next time,
+  // regardless of clock skew between client and server.
+  const localSyncTime = new Date().toISOString();
+  
+  console.log('[Sync] Starting sync, lastSync:', lastSync, 'localTime:', localSyncTime);
   
   // Gather local changes
   const changes = await gatherLocalChanges(lastSync);
@@ -103,8 +108,17 @@ export async function sync(): Promise<{ applied: number; conflicts: string[] }> 
   
   console.log('[Sync] Applied', applied, 'changes');
   
-  // Update last sync time
-  await db.setLastSync(syncResponse.server_time);
+  // Use the EARLIER of local sync time and server time to avoid missing changes
+  // due to clock skew. If client clock is behind server, we use client time;
+  // if server clock is behind client, we use server time.
+  const effectiveSyncTime = localSyncTime < syncResponse.server_time 
+    ? localSyncTime 
+    : syncResponse.server_time;
+  
+  console.log('[Sync] Setting lastSync to:', effectiveSyncTime, 
+    '(local:', localSyncTime, 'server:', syncResponse.server_time, ')');
+  
+  await db.setLastSync(effectiveSyncTime);
   
   return { applied, conflicts: syncResponse.conflicts };
 }
