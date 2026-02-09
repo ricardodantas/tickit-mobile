@@ -30,18 +30,21 @@ src/types/         → TypeScript interfaces
 ## Common Patterns
 
 ### Theme Usage
+
 ```typescript
 const { colors } = useTheme();
 <View style={{ backgroundColor: colors.background }}>
 ```
 
 ### Store Access
+
 ```typescript
 const tasks = useStore(state => state.tasks);
 const addTask = useStore(state => state.addTask);
 ```
 
 ### Database
+
 - Native: expo-sqlite (persistent)
 - Web: in-memory (session only)
 - Schema matches desktop Tickit
