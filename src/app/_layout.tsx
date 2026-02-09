@@ -64,6 +64,9 @@ function RootLayoutContent() {
             backgroundColor: colors.background,
           },
           animation: slideAnimation,
+          // Ensure back gesture uses same native animation
+          customAnimationOnSwipe: true,
+          fullScreenGestureEnabled: true,
         }}
       >
         <Stack.Screen 
@@ -75,6 +78,8 @@ function RootLayoutContent() {
           options={{
             headerShown: false,
             animation: slideAnimation,
+            customAnimationOnSwipe: true,
+            fullScreenGestureEnabled: true,
           }}
         />
         <Stack.Screen
