@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "me.ricardodantas.tickit"
+      "bundleIdentifier": "me.ricardodantas.tickit",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,6 +47,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c316e681-7776-4fdd-82fb-73c418e58638"
+      }
+    },
+    "owner": "ricardo-dantas"
   }
 }
