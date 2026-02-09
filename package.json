@@ -31,7 +31,9 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "expo-dev-client": "~6.0.20",
     "@types/react": "~19.1.0",
+    "eas-cli": "^16.32.0",
     "playwright": "^1.58.2",
     "typescript": "~5.9.2"
   },
